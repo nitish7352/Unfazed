@@ -1,0 +1,60 @@
+version: '3.9'
+
+services:
+  # ── MongoDB ──────────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7.0
+    container_name: unfazed-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: unfazed
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - unfazed-net
+    ports:
+      - '27017:27017'
+
+  # ── Backend API ───────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./unfazed-backend
+      target: production
+    container_name: unfazed-backend
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    env_file:
+      - ./unfazed-backend/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/unfazed
+      NODE_ENV: production
+      CLIENT_URL: http://localhost:80
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - unfazed-net
+    ports:
+      - '5000:5000'
+
+  # ── Frontend SPA ──────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./unfazed-frontend
+      target: production
+    container_name: unfazed-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - unfazed-net
+    ports:
+      - '80:80'
+
+volumes:
+  mongo_data:
+  uploads_data:
+
+networks:
+  unfazed-net:
+    driver: bridge

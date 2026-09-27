@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/* Custom CSS variables for Unfazed brand */
+:root {
+  --color-primary:   #6366f1;
+  --color-primary-dark: #4f46e5;
+  --color-secondary: #f59e0b;
+  --color-success:   #10b981;
+  --color-danger:    #ef4444;
+  --color-warning:   #f59e0b;
+  --color-info:      #3b82f6;
+  --color-surface:   #ffffff;
+  --color-bg:        #f8fafc;
+  --color-text:      #0f172a;
+  --color-muted:     #64748b;
+  --color-border:    #e2e8f0;
+  --radius:          0.5rem;
+  --shadow:          0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md:       0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* TipTap editor styles */
+.tiptap {
+  outline: none;
+  min-height: 200px;
+}
+.tiptap p { margin: 0 0 0.5rem; }
+.tiptap h1, .tiptap h2, .tiptap h3 { font-weight: 600; margin: 1rem 0 0.5rem; }
+.tiptap ul, .tiptap ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+.tiptap blockquote { border-left: 3px solid #6366f1; padding-left: 1rem; color: #64748b; }
+
+/* React Big Calendar overrides */
+.rbc-calendar { font-family: inherit; }
+.rbc-event {
+  background-color: #6366f1 !important;
+  border-radius: 4px !important;
+  border: none !important;
+  font-size: 12px !important;
+}
+.rbc-today { background-color: #eff6ff !important; }

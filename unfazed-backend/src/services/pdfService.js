@@ -1,0 +1,206 @@
+/**
+ * PDF generation service using PDFKit.
+ * Produces invoice and session-note PDFs as Buffer objects.
+ */
+const PDFDocument = require('pdfkit');
+
+/**
+ * Generate a PDF buffer for an invoice.
+ * @param {object} invoice - Populated Invoice document
+ * @param {object} therapist - User document (therapist)
+ * @returns {Promise<Buffer>}
+ */
+const generateInvoicePDF = (invoice, therapist) => {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    doc.on('data',  (chunk) => chunks.push(chunk));
+    doc.on('end',   ()      => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    // ── Header ────────────────────────────────────────────────────────────────
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(24)
+      .fillColor('#6366f1')
+      .text('INVOICE', 50, 50);
+
+    doc
+      .font('Helvetica')
+      .fontSize(10)
+      .fillColor('#64748b')
+      .text('Unfazed Therapy Platform', 50, 80);
+
+    // Invoice metadata (top-right)
+    doc
+      .font('Helvetica-Bold').fontSize(10).fillColor('#0f172a')
+      .text(invoice.invoiceNumber, 400, 50, { align: 'right' });
+    doc
+      .font('Helvetica').fontSize(9).fillColor('#64748b')
+      .text(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, 400, 65, { align: 'right' });
+    if (invoice.dueDate) {
+      doc.text(`Due: ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}`, 400, 78, { align: 'right' });
+    }
+
+    // Horizontal rule
+    doc.moveTo(50, 110).lineTo(545, 110).strokeColor('#e2e8f0').lineWidth(1).stroke();
+
+    // ── From / To ─────────────────────────────────────────────────────────────
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#64748b').text('FROM', 50, 125);
+    doc
+      .font('Helvetica-Bold').fontSize(11).fillColor('#0f172a')
+      .text(`${therapist.firstName} ${therapist.lastName}`, 50, 140);
+    doc.font('Helvetica').fontSize(9).fillColor('#64748b').text(therapist.email, 50, 155);
+
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#64748b').text('BILLED TO', 300, 125);
+    const client = invoice.client;
+    doc
+      .font('Helvetica-Bold').fontSize(11).fillColor('#0f172a')
+      .text(`${client.firstName} ${client.lastName}`, 300, 140);
+    if (client.email) doc.font('Helvetica').fontSize(9).fillColor('#64748b').text(client.email, 300, 155);
+
+    // ── Line items table ───────────────────────────────────────────────────────
+    const tableTop = 200;
+    const col = { desc: 50, qty: 310, unit: 390, total: 480 };
+
+    doc.rect(50, tableTop - 5, 495, 20).fill('#f8fafc');
+
+    ['DESCRIPTION', 'QTY', 'UNIT PRICE', 'TOTAL'].forEach((h, i) => {
+      const x = [col.desc, col.qty, col.unit, col.total][i];
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#64748b').text(h, x, tableTop);
+    });
+
+    doc.moveTo(50, tableTop + 18).lineTo(545, tableTop + 18).strokeColor('#e2e8f0').stroke();
+
+    let y = tableTop + 28;
+    invoice.lineItems.forEach((item) => {
+      if (y > 700) { doc.addPage(); y = 50; }
+      doc.font('Helvetica').fontSize(9).fillColor('#0f172a')
+        .text(item.description, col.desc, y, { width: 250 })
+        .text(String(item.quantity), col.qty, y)
+        .text(`₹${item.unitPrice.toLocaleString('en-IN')}`, col.unit, y)
+        .text(`₹${item.total.toLocaleString('en-IN')}`, col.total, y);
+      y += 20;
+      doc.moveTo(50, y - 2).lineTo(545, y - 2).strokeColor('#f1f5f9').lineWidth(0.5).stroke();
+    });
+
+    // ── Totals ────────────────────────────────────────────────────────────────
+    y += 10;
+    const addTotalRow = (label, value, bold = false) => {
+      doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(9)
+        .fillColor(bold ? '#0f172a' : '#64748b')
+        .text(label, 390, y)
+        .text(value, 480, y);
+      y += 18;
+    };
+
+    addTotalRow('Subtotal', `₹${invoice.subtotal.toLocaleString('en-IN')}`);
+    if (invoice.tax)      addTotalRow('Tax',      `₹${invoice.tax.toLocaleString('en-IN')}`);
+    if (invoice.discount) addTotalRow('Discount', `-₹${invoice.discount.toLocaleString('en-IN')}`);
+
+    doc.moveTo(390, y - 2).lineTo(545, y - 2).strokeColor('#6366f1').lineWidth(1).stroke();
+    y += 4;
+    addTotalRow('TOTAL', `₹${invoice.total.toLocaleString('en-IN')}`, true);
+
+    // Status badge
+    const statusColors = { paid: '#10b981', pending: '#f59e0b', overdue: '#ef4444' };
+    const sc = statusColors[invoice.status] || '#64748b';
+    doc.roundedRect(50, y + 10, 60, 18, 4).fill(sc);
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#ffffff')
+      .text(invoice.status.toUpperCase(), 58, y + 15);
+
+    // Notes
+    if (invoice.notes) {
+      doc.font('Helvetica').fontSize(8).fillColor('#64748b')
+        .text(`Notes: ${invoice.notes}`, 50, y + 40);
+    }
+
+    // Footer
+    doc.moveTo(50, 780).lineTo(545, 780).strokeColor('#e2e8f0').lineWidth(1).stroke();
+    doc.font('Helvetica').fontSize(8).fillColor('#94a3b8')
+      .text('Generated by Unfazed — unfazed.in', 50, 790, { align: 'center', width: 495 });
+
+    doc.end();
+  });
+};
+
+/**
+ * Generate a PDF buffer for a session note.
+ * @param {object} note - Populated SessionNote document
+ * @param {object} therapist - User document
+ * @returns {Promise<Buffer>}
+ */
+const generateNotePDF = (note, therapist) => {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    doc.on('data',  (chunk) => chunks.push(chunk));
+    doc.on('end',   ()      => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    // Header
+    doc.font('Helvetica-Bold').fontSize(18).fillColor('#6366f1').text('SESSION NOTE', 50, 50);
+    doc.font('Helvetica').fontSize(9).fillColor('#64748b')
+      .text(`Therapist: ${therapist.firstName} ${therapist.lastName}`, 50, 78)
+      .text(`Client: ${note.client.firstName} ${note.client.lastName}`, 50, 92)
+      .text(`Date: ${note.session ? new Date(note.session.startTime).toLocaleDateString('en-IN') : new Date(note.createdAt).toLocaleDateString('en-IN')}`, 50, 106)
+      .text(`Format: ${note.format.toUpperCase()}`, 50, 120);
+
+    if (note.isSigned) {
+      doc.font('Helvetica-Bold').fontSize(9).fillColor('#10b981')
+        .text(`✓ SIGNED: ${new Date(note.signedAt).toLocaleDateString('en-IN')}`, 400, 78);
+    }
+
+    doc.moveTo(50, 138).lineTo(545, 138).strokeColor('#e2e8f0').stroke();
+
+    let y = 155;
+
+    const section = (title, content) => {
+      if (!content) return;
+      if (y > 700) { doc.addPage(); y = 50; }
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#6366f1').text(title, 50, y);
+      y += 16;
+      doc.font('Helvetica').fontSize(9).fillColor('#0f172a')
+        .text(content, 50, y, { width: 495 });
+      y += doc.heightOfString(content, { width: 495 }) + 16;
+    };
+
+    if (note.format === 'soap') {
+      section('Subjective', note.subjective);
+      section('Objective',  note.objective);
+      section('Assessment', note.assessment);
+      section('Plan',       note.plan);
+    } else if (note.format === 'dap') {
+      section('Data',       note.data);
+      section('Assessment', note.assessment);
+      section('Plan',       note.plan);
+    } else {
+      // Strip basic HTML tags for PDF
+      const plainContent = (note.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      section('Note', plainContent);
+    }
+
+    section('Homework / Tasks', note.homework);
+    section('Follow-up Plan',   note.followUp);
+
+    if (note.clientMood) {
+      section('Client Mood', `${note.clientMood}/10`);
+    }
+    if (note.riskLevel) {
+      section('Risk Level', note.riskLevel.toUpperCase());
+    }
+    if (note.diagnosisCodes?.length) {
+      section('Diagnosis Codes', note.diagnosisCodes.join(', '));
+    }
+
+    doc.moveTo(50, 780).lineTo(545, 780).strokeColor('#e2e8f0').lineWidth(1).stroke();
+    doc.font('Helvetica').fontSize(8).fillColor('#94a3b8')
+      .text('CONFIDENTIAL — Generated by Unfazed', 50, 790, { align: 'center', width: 495 });
+
+    doc.end();
+  });
+};
+
+module.exports = { generateInvoicePDF, generateNotePDF };

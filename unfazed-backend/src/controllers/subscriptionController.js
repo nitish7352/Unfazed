@@ -1,0 +1,126 @@
+const User     = require('../models/User');
+const asyncHandler = require('../utils/asyncHandler');
+const { successResponse, errorResponse } = require('../utils/apiResponse');
+const Razorpay = require('razorpay');
+const crypto   = require('crypto');
+
+const PLANS = {
+  basic:      { name: 'Basic',      price: 99900,   interval: 'monthly', maxClients: 20  },
+  pro:        { name: 'Pro',        price: 249900,  interval: 'monthly', maxClients: 100 },
+  enterprise: { name: 'Enterprise', price: 599900,  interval: 'monthly', maxClients: 9999 },
+};
+
+const getRazorpay = () => new Razorpay({
+  key_id:     process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// @desc  Get available plans
+// @route GET /api/subscription/plans
+const getPlans = asyncHandler(async (req, res) => {
+  return successResponse(res, { plans: PLANS });
+});
+
+// @desc  Get current subscription
+// @route GET /api/subscription
+const getSubscription = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select('subscription firstName lastName email');
+  return successResponse(res, { subscription: user.subscription });
+});
+
+// @desc  Create Razorpay order for a subscription plan
+// @route POST /api/subscription/order
+const createSubscriptionOrder = asyncHandler(async (req, res) => {
+  const { plan } = req.body;
+  if (!PLANS[plan]) return errorResponse(res, 'Invalid plan', 400);
+
+  const razorpay = getRazorpay();
+  const order    = await razorpay.orders.create({
+    amount:   PLANS[plan].price,
+    currency: 'INR',
+    receipt:  `sub-${req.user._id}-${Date.now()}`,
+    notes:    { userId: req.user._id.toString(), plan },
+  });
+
+  return successResponse(res, {
+    orderId:  order.id,
+    amount:   order.amount,
+    currency: order.currency,
+    keyId:    process.env.RAZORPAY_KEY_ID,
+    plan:     PLANS[plan],
+  });
+});
+
+// @desc  Verify & activate subscription
+// @route POST /api/subscription/verify
+const verifySubscription = asyncHandler(async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan } = req.body;
+
+  const expectedSig = crypto
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest('hex');
+
+  if (expectedSig !== razorpay_signature) {
+    return errorResponse(res, 'Signature verification failed', 400);
+  }
+
+  const startDate = new Date();
+  const endDate   = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+
+  await User.findByIdAndUpdate(req.user._id, {
+    'subscription.plan':      plan,
+    'subscription.status':    'active',
+    'subscription.startDate': startDate,
+    'subscription.endDate':   endDate,
+    'subscription.razorpaySubscriptionId': razorpay_payment_id,
+  });
+
+  return successResponse(res, {}, `${PLANS[plan]?.name || plan} plan activated`);
+});
+
+// @desc  Cancel subscription
+// @route POST /api/subscription/cancel
+const cancelSubscription = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(req.user._id, {
+    'subscription.status': 'cancelled',
+  });
+  return successResponse(res, {}, 'Subscription cancelled');
+});
+
+// @desc  Razorpay webhook
+// @route POST /api/subscription/webhook
+const handleWebhook = asyncHandler(async (req, res) => {
+  const sig       = req.headers['x-razorpay-signature'];
+  const secret    = process.env.RAZORPAY_KEY_SECRET;
+  const body      = JSON.stringify(req.body);
+  const expected  = crypto.createHmac('sha256', secret).update(body).digest('hex');
+
+  if (sig !== expected) return res.status(400).json({ error: 'Invalid signature' });
+
+  const event = req.body.event;
+
+  if (event === 'subscription.charged') {
+    const userId = req.body.payload?.subscription?.entity?.notes?.userId;
+    if (userId) {
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 1);
+      await User.findByIdAndUpdate(userId, {
+        'subscription.status':  'active',
+        'subscription.endDate': endDate,
+      });
+    }
+  }
+
+  if (event === 'subscription.cancelled') {
+    const userId = req.body.payload?.subscription?.entity?.notes?.userId;
+    if (userId) {
+      await User.findByIdAndUpdate(userId, { 'subscription.status': 'cancelled' });
+    }
+  }
+
+  res.json({ received: true });
+});
+
+module.exports = { getPlans, getSubscription, createSubscriptionOrder, verifySubscription, cancelSubscription, handleWebhook };
