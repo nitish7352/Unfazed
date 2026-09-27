@@ -6,9 +6,11 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
 
-// Auth pages
+// Public pages
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 // App pages
 import DashboardPage from "./pages/dashboard/DashboardPage";
@@ -22,9 +24,8 @@ import NoteEditorPage from "./pages/notes/NoteEditorPage";
 import BillingPage from "./pages/billing/BillingPage";
 import AnalyticsPage from "./pages/analytics/AnalyticsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
-import VideoRoomPage from "./pages/VideoRoomPage";
 import SubscriptionPage from "./pages/settings/SubscriptionPage";
-import NotFoundPage from "./pages/NotFoundPage";
+import VideoRoomPage from "./pages/VideoRoomPage";
 
 function App() {
   return (
@@ -34,11 +35,12 @@ function App() {
           <ToastProvider>
             <NotificationProvider>
               <Routes>
-                {/* Public routes */}
+                {/* ── Public routes ── */}
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
 
-                {/* Video room — standalone, no sidebar */}
+                {/* ── Video room — standalone, no sidebar ── */}
                 <Route element={<ProtectedRoute />}>
                   <Route
                     path="/session/room/:roomId"
@@ -46,18 +48,12 @@ function App() {
                   />
                 </Route>
 
-                {/* Protected app routes with sidebar layout */}
+                {/* ── Protected app with sidebar layout ── */}
                 <Route element={<ProtectedRoute />}>
                   <Route element={<AppLayout />}>
-                    <Route
-                      path="/"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
                     <Route path="/dashboard" element={<DashboardPage />} />
-
                     <Route path="/clients" element={<ClientsPage />} />
                     <Route path="/clients/:id" element={<ClientDetailPage />} />
-
                     <Route path="/sessions" element={<SessionsPage />} />
                     <Route
                       path="/sessions/calendar"
@@ -67,17 +63,14 @@ function App() {
                       path="/sessions/:id"
                       element={<SessionDetailPage />}
                     />
-
                     <Route path="/notes" element={<NotesPage />} />
                     <Route path="/notes/:id" element={<NoteEditorPage />} />
                     <Route
                       path="/notes/session/:sessionId"
                       element={<NoteEditorPage />}
                     />
-
                     <Route path="/billing" element={<BillingPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
-
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route
                       path="/settings/subscription"
@@ -86,7 +79,7 @@ function App() {
                   </Route>
                 </Route>
 
-                {/* 404 */}
+                {/* ── 404 ── */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </NotificationProvider>

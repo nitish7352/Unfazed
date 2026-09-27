@@ -1,138 +1,181 @@
 # Unfazed — Therapy Practice Management Platform
 
-A full-stack SaaS application for therapists to manage clients, sessions, notes, billing, and analytics.
+> A full-stack SaaS platform for therapists to manage clients, sessions, clinical notes, billing, and analytics.
+
+**Live demo:** https://unfazed-seven.vercel.app  
+**API:** https://unfazed-3t20.onrender.com/api/health
+
+---
 
 ## Stack
 
-| Layer    | Tech                                                |
-|----------|-----------------------------------------------------|
-| Frontend | React 18 + Vite, Tailwind CSS v4, React Router DOM  |
-| Backend  | Node.js + Express 5, MongoDB + Mongoose             |
-| Auth     | JWT (jsonwebtoken) + bcryptjs                       |
-| Payments | Razorpay                                            |
-| Realtime | Socket.io (WebRTC signaling for video sessions)     |
-| Notes    | TipTap rich-text editor                             |
-| Charts   | Recharts                                            |
-| Calendar | react-big-calendar                                  |
+| Layer    | Technology                                           |
+| -------- | ---------------------------------------------------- |
+| Frontend | React 18 + Vite, Tailwind CSS v4, React Router v7    |
+| Backend  | Node.js 20 + Express 5, MongoDB + Mongoose           |
+| Auth     | JWT (jsonwebtoken) + bcryptjs                        |
+| Payments | Razorpay                                             |
+| Realtime | Socket.io (WebRTC signaling for video sessions)      |
+| Notes    | TipTap rich-text editor                              |
+| Charts   | Recharts                                             |
+| Calendar | react-big-calendar                                   |
+| Email    | Nodemailer                                           |
+| PDF      | PDFKit                                               |
+| Security | Helmet + express-rate-limit                          |
+| Deploy   | Vercel (frontend) + Render (backend) + MongoDB Atlas |
+
+---
+
+## Features
+
+- **Authentication** — JWT register/login, role-based access (therapist / admin)
+- **Client management** — profiles, status tracking, intake forms, session history
+- **Session scheduling** — create, update, cancel, complete; recurring sessions; calendar view
+- **Video sessions** — WebRTC peer-to-peer via Socket.io signaling, in-session chat
+- **Clinical notes** — SOAP, DAP, free-form, progress formats; TipTap rich text; sign & lock
+- **Billing** — invoice creation with line items, Razorpay payment flow, payment verification
+- **Exports** — invoice PDF, note PDF, sessions/invoices/clients CSV
+- **Analytics** — revenue trends, session frequency, client growth (Recharts)
+- **Availability** — working hours management with slot calculator
+- **Subscription plans** — Free / Basic / Pro / Enterprise via Razorpay
+- **Admin panel** — platform-wide user management and stats
+- **Notifications** — in-app notification centre with badge count
+- **Settings** — profile, avatar upload, password change, working hours
 
 ---
 
 ## Project Structure
 
 ```
-Major Project/
-├── unfazed-backend/          # Express API server
+Unfazed/
+├── unfazed-backend/          # Express API
 │   ├── src/
-│   │   ├── config/           # DB + multer config
-│   │   ├── controllers/      # Route handlers
-│   │   ├── middleware/        # Auth, error handling, validation
-│   │   ├── models/           # Mongoose schemas
-│   │   ├── routes/           # Express routers
-│   │   ├── services/         # Email service
-│   │   ├── sockets/          # Socket.io video signaling
-│   │   ├── utils/            # Helpers (asyncHandler, apiResponse, token)
-│   │   └── validators/       # express-validator rules
-│   ├── uploads/              # User-uploaded files
-│   ├── app.js                # Express app (routes, middleware)
-│   ├── server.js             # HTTP + Socket.io server entry
-│   ├── .env                  # Local environment variables (gitignored)
-│   └── .env.example          # Template for env vars
+│   │   ├── config/           # DB + multer
+│   │   ├── controllers/      # 12 controllers
+│   │   ├── middleware/       # auth, errorHandler, validate
+│   │   ├── models/           # 7 Mongoose models
+│   │   ├── routes/           # 12 route files
+│   │   ├── services/         # email, PDF, recurring
+│   │   ├── sockets/          # WebRTC signaling
+│   │   ├── utils/            # asyncHandler, apiResponse, token
+│   │   └── validators/
+│   ├── app.js
+│   ├── server.js
+│   └── .env.example
 │
 └── unfazed-frontend/         # React + Vite SPA
     ├── src/
-    │   ├── api/              # Axios API modules per resource
-    │   ├── components/       # Reusable UI components
-    │   │   ├── common/       # Button, Input, Modal, Badge, Avatar, Toast, Spinner
-    │   │   ├── layout/       # AppLayout, Sidebar, Topbar
-    │   │   ├── clients/      # ClientForm
-    │   │   ├── sessions/     # SessionForm
-    │   │   ├── billing/      # InvoiceForm
-    │   │   └── video/
+    │   ├── api/              # 11 Axios API modules
+    │   ├── components/       # Button, Input, Modal, Badge, Avatar, Toast, Spinner, ErrorBoundary
     │   ├── context/          # AuthContext, NotificationContext
-    │   ├── hooks/            # Custom hooks
-    │   ├── pages/            # Route-level page components
-    │   │   ├── auth/         # LoginPage, RegisterPage
-    │   │   ├── dashboard/    # DashboardPage
-    │   │   ├── clients/      # ClientsPage, ClientDetailPage
-    │   │   ├── sessions/     # SessionsPage, SessionDetailPage
-    │   │   ├── notes/        # NotesPage, NoteEditorPage
-    │   │   ├── billing/      # BillingPage
-    │   │   ├── analytics/    # AnalyticsPage
-    │   │   └── settings/     # SettingsPage
-    │   └── utils/
-    └── index.html
+    │   ├── hooks/            # useDebounce, useLocalStorage, usePagination, useApi
+    │   ├── pages/            # LandingPage + 15 app pages
+    │   └── utils/            # download.js, formatters.js
+    ├── vercel.json           # SPA routing rewrites
+    └── .env.example
 ```
 
 ---
 
-## Getting Started
+## Local Development
 
 ### Prerequisites
-- Node.js 18+
-- MongoDB (local or Atlas URI)
-- npm
 
-### 1. Backend setup
+- Node.js 20+
+- MongoDB (local) or MongoDB Atlas URI
+
+### Backend
 
 ```bash
 cd unfazed-backend
 cp .env.example .env
-# Edit .env with your MongoDB URI, JWT secret, Razorpay keys, SMTP credentials
+# Fill in MONGODB_URI, JWT_SECRET, RAZORPAY keys, SMTP creds
 npm run dev
+# → http://localhost:5000
 ```
 
-Backend runs on `http://localhost:5000`
-
-### 2. Frontend setup
+### Frontend
 
 ```bash
 cd unfazed-frontend
+cp .env.example .env
+# Set VITE_API_URL=http://localhost:5000/api
 npm run dev
+# → http://localhost:5173
 ```
 
-Frontend runs on `http://localhost:5173`
+---
+
+## Deployment
+
+### Backend → Render
+
+| Setting        | Value             |
+| -------------- | ----------------- |
+| Root Directory | `unfazed-backend` |
+| Build Command  | `npm install`     |
+| Start Command  | `node server.js`  |
+| Node version   | 20                |
+
+**Required environment variables on Render:**
+
+```
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=<32+ char random string>
+JWT_EXPIRE=7d
+RAZORPAY_KEY_ID=rzp_...
+RAZORPAY_KEY_SECRET=...
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your@gmail.com
+SMTP_PASS=<gmail app password>
+FROM_EMAIL=your@gmail.com
+FROM_NAME=Unfazed
+CLIENT_URL=https://unfazed-seven.vercel.app
+MAX_FILE_SIZE=5242880
+```
+
+### Frontend → Vercel
+
+| Setting          | Value              |
+| ---------------- | ------------------ |
+| Root Directory   | `unfazed-frontend` |
+| Framework        | Vite               |
+| Build Command    | `npm run build`    |
+| Output Directory | `dist`             |
+
+**Required environment variables on Vercel:**
+
+```
+VITE_API_URL=https://unfazed-3t20.onrender.com/api
+VITE_SOCKET_URL=https://unfazed-3t20.onrender.com
+VITE_RAZORPAY_KEY_ID=rzp_test_...
+VITE_APP_NAME=Unfazed
+```
 
 ---
 
 ## API Endpoints
 
-| Resource       | Base path           |
-|----------------|---------------------|
-| Health check   | GET /api/health     |
-| Auth           | /api/auth           |
-| Profile        | /api/profile        |
-| Clients        | /api/clients        |
-| Sessions       | /api/sessions       |
-| Notes          | /api/notes          |
-| Invoices       | /api/invoices       |
-| Analytics      | /api/analytics      |
-| Notifications  | /api/notifications  |
+| Resource      | Base path            |
+| ------------- | -------------------- |
+| Health        | `GET /api/health`    |
+| Auth          | `/api/auth`          |
+| Profile       | `/api/profile`       |
+| Clients       | `/api/clients`       |
+| Sessions      | `/api/sessions`      |
+| Notes         | `/api/notes`         |
+| Invoices      | `/api/invoices`      |
+| Analytics     | `/api/analytics`     |
+| Notifications | `/api/notifications` |
+| Exports       | `/api/export`        |
+| Availability  | `/api/availability`  |
+| Subscription  | `/api/subscription`  |
+| Admin         | `/api/admin`         |
 
 ---
 
-## Key Features
+## License
 
-- **Authentication** — JWT-based register/login, role-based access (therapist / admin)
-- **Client management** — Full CRUD, status tracking, intake forms, session history
-- **Session scheduling** — Create, update, cancel, complete sessions with billing rates
-- **Video sessions** — WebRTC peer-to-peer video via Socket.io signaling, in-session chat
-- **Session notes** — SOAP, DAP, free-form, and progress note formats; TipTap rich text; sign & lock
-- **Billing** — Invoice creation, line items, Razorpay payment integration, payment verification
-- **Analytics** — Revenue charts, session trends, client growth (Recharts)
-- **Notifications** — In-app notification center with real-time badge count
-- **Settings** — Profile, avatar upload, password change, working hours
-
----
-
-## Environment Variables (backend)
-
-See `.env.example` for the full list. Key variables:
-
-```
-MONGODB_URI        — MongoDB connection string
-JWT_SECRET         — Secret for signing JWTs
-RAZORPAY_KEY_ID    — Razorpay API key ID
-RAZORPAY_KEY_SECRET— Razorpay API key secret
-CLIENT_URL         — Frontend URL for CORS
-SMTP_*             — Nodemailer SMTP config
-```
+MIT
