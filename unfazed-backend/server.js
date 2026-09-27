@@ -1,4 +1,8 @@
-require('dotenv').config();
+﻿// Load .env only in development — Render injects env vars directly, no .env file needed
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const http   = require('http');
 const { Server } = require('socket.io');
 const app    = require('./app');
@@ -7,10 +11,8 @@ const setupVideoSocket = require('./src/sockets/videoSocket');
 
 const PORT = process.env.PORT || 5000;
 
-// Create HTTP server
 const server = http.createServer(app);
 
-// Attach Socket.io
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
@@ -19,13 +21,9 @@ const io = new Server(server, {
   },
 });
 
-// Setup socket namespaces / events
 setupVideoSocket(io);
-
-// Make io available to controllers via app locals
 app.set('io', io);
 
-// Connect to MongoDB, then start server
 const start = async () => {
   await connectDB();
   server.listen(PORT, () => {
