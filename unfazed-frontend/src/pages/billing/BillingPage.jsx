@@ -8,6 +8,7 @@ import Button from '../../components/common/Button';
 import Spinner from '../../components/common/Spinner';
 import Modal from '../../components/common/Modal';
 import InvoiceForm from '../../components/billing/InvoiceForm';
+import { loadRazorpay } from '../../utils/razorpay';
 
 const BillingPage = () => {
   const [invoices, setInvoices] = useState([]);
@@ -34,13 +35,9 @@ const BillingPage = () => {
 
   const handleRazorpayPayment = async (invoice) => {
     try {
+      await loadRazorpay();
       const { data } = await createRazorpayOrderAPI(invoice._id);
       const { orderId, amount, currency, keyId } = data.data;
-
-      if (!window.Razorpay) {
-        toast.error('Razorpay SDK not loaded. Add the script to index.html.');
-        return;
-      }
 
       const rzp = new window.Razorpay({
         key: keyId,

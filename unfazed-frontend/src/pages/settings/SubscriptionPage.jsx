@@ -5,6 +5,7 @@ import { useToast } from '../../components/common/Toast';
 import Button from '../../components/common/Button';
 import Spinner from '../../components/common/Spinner';
 import api from '../../api/axios';
+import { loadRazorpay } from '../../utils/razorpay';
 
 const PLAN_DETAILS = {
   free:       { label: 'Free',       color: 'text-slate-600', bg: 'bg-slate-50',  price: '₹0',     clients: 5,    features: ['5 clients', 'Session scheduling', 'Basic notes'] },
@@ -30,13 +31,9 @@ const SubscriptionPage = () => {
   const handleUpgrade = async (plan) => {
     setLoading(true);
     try {
+      await loadRazorpay();
       const { data } = await api.post('/subscription/order', { plan });
       const { orderId, amount, currency, keyId } = data.data;
-
-      if (!window.Razorpay) {
-        toast.error('Razorpay SDK not loaded. Add script to index.html.');
-        return;
-      }
 
       const rzp = new window.Razorpay({
         key:      keyId,
