@@ -1,4 +1,4 @@
-﻿// Load .env only in development — Render injects env vars directly
+// Load .env only in development — Render injects env vars directly
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
@@ -73,11 +73,19 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // â”€â”€ Health check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Unfazed API is running ðŸš€',
-    timestamp: new Date().toISOString(),
+  const mongoose = require('mongoose');
+  const dbState  = mongoose.connection.readyState;
+  const dbStatus = ['disconnected','connected','connecting','disconnecting'][dbState] || 'unknown';
+  const healthy  = dbState === 1;
+
+  res.status(healthy ? 200 : 503).json({
+    success:     healthy,
+    message:     healthy ? 'Unfazed API is running' : 'Database not connected',
+    timestamp:   new Date().toISOString(),
     environment: process.env.NODE_ENV,
+    uptime:      Math.floor(process.uptime()) + 's',
+    database:    dbStatus,
+    version:     '1.0.0',
   });
 });
 
@@ -104,4 +112,3 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 module.exports = app;
-
