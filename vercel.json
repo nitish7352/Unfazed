@@ -1,9 +1,0 @@
-{
-  "buildCommand": "cd unfazed-frontend && npm install && npm run build",
-  "outputDirectory": "unfazed-frontend/dist",
-  "installCommand": "cd unfazed-frontend && npm install",
-  "framework": "vite",
-  "rewrites": [
-    { "source": "/:path*", "destination": "/index.html" }
-  ]
-}
