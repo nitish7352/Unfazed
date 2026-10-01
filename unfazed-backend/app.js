@@ -124,8 +124,8 @@ app.get('/api/health', (req, res) => {
   const dbStatus = ['disconnected','connected','connecting','disconnecting'][dbState] || 'unknown';
   const healthy  = dbState === 1;
 
-  const rzKeyId     = process.env.RAZORPAY_KEY_ID     || 'NOT_SET';
-  const rzKeySecret = process.env.RAZORPAY_KEY_SECRET || 'NOT_SET';
+  const rzKeyId     = process.env.RAZORPAY_KEY_ID     || 'rzp_test_TiNBqobbpz64rc';
+  const rzKeySecret = process.env.RAZORPAY_KEY_SECRET || 'PST0SEgyQAjZdbmdp1kwc7tz';
   res.status(healthy ? 200 : 503).json({
     success:     healthy,
     message:     healthy ? 'Unfazed API is running' : 'Database not connected',

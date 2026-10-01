@@ -10,9 +10,13 @@ const PLANS = {
   enterprise: { name: 'Enterprise', price: 599900,  interval: 'monthly', maxClients: 9999 },
 };
 
+// Fallback to hardcoded test keys if env vars are not set on the server
+const RZP_KEY_ID     = process.env.RAZORPAY_KEY_ID     || 'rzp_test_TiNBqobbpz64rc';
+const RZP_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'PST0SEgyQAjZdbmdp1kwc7tz';
+
 const getRazorpay = () => new Razorpay({
-  key_id:     process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id:     RZP_KEY_ID,
+  key_secret: RZP_KEY_SECRET,
 });
 
 // @desc  Get available plans
@@ -57,7 +61,7 @@ const createSubscriptionOrder = asyncHandler(async (req, res) => {
     orderId:  order.id,
     amount:   order.amount,
     currency: order.currency,
-    keyId:    process.env.RAZORPAY_KEY_ID,
+    keyId:    RZP_KEY_ID,
     plan:     PLANS[plan],
   });
 });
@@ -73,7 +77,7 @@ const verifySubscription = asyncHandler(async (req, res) => {
   }
 
   const expectedSig = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .createHmac('sha256', RZP_KEY_SECRET)
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
     .digest('hex');
 
