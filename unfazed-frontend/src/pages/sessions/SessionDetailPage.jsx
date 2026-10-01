@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
+import { isSessionExpired } from '../../utils/apiError';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getSessionAPI, cancelSessionAPI, completeSessionAPI } from '../../api/sessions';
@@ -29,7 +30,7 @@ const SessionDetailPage = () => {
       await cancelSessionAPI(id, { reason, cancelledBy: 'therapist' });
       toast.success('Session cancelled');
       setSession((s) => ({ ...s, status: 'cancelled' }));
-    } catch { toast.error('Failed to cancel'); }
+    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to cancel'); }
   };
 
   const handleComplete = async () => {
@@ -37,7 +38,7 @@ const SessionDetailPage = () => {
       await completeSessionAPI(id);
       toast.success('Session marked complete');
       setSession((s) => ({ ...s, status: 'completed' }));
-    } catch { toast.error('Failed to update session'); }
+    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to update session'); }
   };
 
   if (loading) return <div className="flex justify-center h-64 items-center"><Spinner size="lg" /></div>;

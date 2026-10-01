@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
+import { isSessionExpired } from '../../utils/apiError';
 import { Link, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getSessionsAPI, cancelSessionAPI } from '../../api/sessions';
@@ -25,7 +26,7 @@ const SessionsPage = () => {
       if (clientIdFilter) params.clientId = clientIdFilter;
       const { data } = await getSessionsAPI(params);
       setSessions(data.data);
-    } catch { toast.error('Failed to load sessions'); }
+    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to load sessions'); }
     finally { setLoading(false); }
   }, [clientIdFilter]);
 
@@ -38,7 +39,7 @@ const SessionsPage = () => {
       await cancelSessionAPI(id, { reason, cancelledBy: 'therapist' });
       toast.success('Session cancelled');
       fetchSessions();
-    } catch { toast.error('Failed to cancel session'); }
+    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to cancel session'); }
   };
 
   return (

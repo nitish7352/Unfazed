@@ -13,7 +13,7 @@ const protect = async (req, res, next) => {
   }
 
   if (!token) {
-    return errorResponse(res, 'Not authorized, no token provided', 401);
+    return errorResponse(res, 'Not authorized — no token provided', 401);
   }
 
   try {
@@ -21,7 +21,7 @@ const protect = async (req, res, next) => {
     const user = await User.findById(decoded.id).select('-password');
 
     if (!user) {
-      return errorResponse(res, 'User not found', 401);
+      return errorResponse(res, 'Not authorized — user no longer exists', 401);
     }
     if (!user.isActive) {
       return errorResponse(res, 'Account is deactivated', 403);
@@ -31,9 +31,9 @@ const protect = async (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return errorResponse(res, 'Token expired, please login again', 401);
+      return errorResponse(res, 'Session expired — please log in again', 401);
     }
-    return errorResponse(res, 'Not authorized, invalid token', 401);
+    return errorResponse(res, 'Not authorized — invalid token', 401);
   }
 };
 

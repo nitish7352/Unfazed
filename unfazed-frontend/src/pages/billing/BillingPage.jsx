@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
+import { isSessionExpired } from '../../utils/apiError';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getInvoicesAPI, createRazorpayOrderAPI, verifyPaymentAPI } from '../../api/invoices';
@@ -27,7 +28,7 @@ const BillingPage = () => {
       if (clientIdFilter) params.clientId = clientIdFilter;
       const { data } = await getInvoicesAPI(params);
       setInvoices(data.data);
-    } catch { toast.error('Failed to load invoices'); }
+    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to load invoices'); }
     finally { setLoading(false); }
   }, [statusFilter, clientIdFilter]);
 
@@ -51,7 +52,7 @@ const BillingPage = () => {
             await verifyPaymentAPI(invoice._id, response);
             toast.success('Payment verified!');
             fetchInvoices();
-          } catch { toast.error('Payment verification failed'); }
+          } catch (err) { if (!isSessionExpired(err)) toast.error('Payment verification failed'); }
         },
         prefill: {
           email: invoice.client?.email || '',

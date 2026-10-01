@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { enIN } from 'date-fns/locale';
@@ -63,7 +63,7 @@ const CalendarPage = () => {
         resource: s,
       }));
       setEvents(mapped);
-    } catch { toast.error('Failed to load sessions'); }
+    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to load sessions'); }
     finally   { setLoading(false); }
   }, []);
 

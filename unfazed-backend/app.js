@@ -21,6 +21,9 @@ const exportRoutes       = require('./src/routes/exportRoutes');
 const adminRoutes        = require('./src/routes/adminRoutes');
 const availabilityRoutes = require('./src/routes/availabilityRoutes');
 const subscriptionRoutes = require('./src/routes/subscriptionRoutes');
+const paymentRoutes      = require('./src/routes/paymentRoutes');
+const schedulingRoutes   = require('./src/routes/schedulingRoutes');
+const entitlementRoutes  = require('./src/routes/entitlementRoutes');
 
 // Error handler
 const errorHandler = require('./src/middleware/errorHandler');
@@ -71,12 +74,10 @@ app.use(cors({
     // Normalize origin by removing trailing slash
     const normalizedOrigin = origin.replace(/\/$/, '');
 
-    // Allow Vercel deployments
-    if (
-      /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(normalizedOrigin)
-    ) {
-      return callback(null, true);
-    }
+    // Accepts ANY *.vercel.app URL — no matter which preview Vercel assigns
+    if (/^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(origin)) {
+     return callback(null, true);
+   }
 
     // Allow explicitly configured origins
     if (allowedOrigins.includes(normalizedOrigin)) {
@@ -107,6 +108,7 @@ app.use(cors({
 
 // â”€â”€ Body parsers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Webhook route needs raw body â€” mount BEFORE json parser
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -146,6 +148,9 @@ app.use('/api/export',        exportRoutes);
 app.use('/api/admin',         adminRoutes);
 app.use('/api/availability',  availabilityRoutes);
 app.use('/api/subscription',  subscriptionRoutes);
+app.use('/api/payments',      paymentRoutes);
+app.use('/api/scheduling',    schedulingRoutes);
+app.use('/api/entitlements',  entitlementRoutes);
 
 // â”€â”€ 404 handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use((req, res) => {

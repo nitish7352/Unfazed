@@ -6,8 +6,9 @@ const {
 } = require('../controllers/subscriptionController');
 const { protect } = require('../middleware/auth');
 
-// Webhook — raw body needed, no auth
-router.post('/webhook', express.raw({ type: 'application/json' }), handleWebhook);
+// Webhook — raw body is already parsed by app.js before the json middleware.
+// Do NOT add express.raw() here again — it would cause double-parsing and corrupt the body.
+router.post('/webhook', handleWebhook);
 
 router.use(protect);
 

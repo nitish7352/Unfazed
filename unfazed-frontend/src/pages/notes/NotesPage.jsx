@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
+import { isSessionExpired } from '../../utils/apiError';
 import { Link, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getNotesAPI } from '../../api/notes';
@@ -24,7 +25,7 @@ const NotesPage = () => {
       if (search) params.search = search;
       const { data } = await getNotesAPI(params);
       setNotes(data.data);
-    } catch { toast.error('Failed to load notes'); }
+    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to load notes'); }
     finally { setLoading(false); }
   }, [clientIdFilter, search]);
 

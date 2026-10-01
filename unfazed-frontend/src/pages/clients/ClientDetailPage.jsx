@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
+import { isSessionExpired } from '../../utils/apiError';
 import { useParams, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getClientAPI } from '../../api/clients';
@@ -29,7 +30,7 @@ const ClientDetailPage = () => {
     try {
       const { data } = await getClientAPI(id);
       setClient(data.data.client);
-    } catch { toast.error('Failed to load client'); }
+    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to load client'); }
     finally { setLoading(false); }
   };
 

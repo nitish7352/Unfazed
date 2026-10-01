@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
+import { isSessionExpired } from '../../utils/apiError';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -73,7 +74,7 @@ const NoteEditorPage = () => {
         setClientMood(n.clientMood || '');
         setRiskLevel(n.riskLevel || '');
         if (editor && n.content) editor.commands.setContent(n.content);
-      } catch { toast.error('Failed to load note'); }
+      } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to load note'); }
       finally { setLoading(false); }
     };
     load();

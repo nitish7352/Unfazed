@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -137,8 +137,8 @@ const SettingsPage = () => {
       await updateAvatarAPI(formData);
       await refreshUser();
       toast.success("Avatar updated");
-    } catch {
-      toast.error("Failed to upload avatar");
+    } catch (err) {
+      if (!isSessionExpired(err)) toast.error("Failed to upload avatar");
     } finally {
       setAvatarLoading(false);
     }
@@ -155,8 +155,8 @@ const SettingsPage = () => {
     try {
       await updateAvailabilityAPI({ workingHours });
       toast.success("Availability saved");
-    } catch {
-      toast.error("Failed to save availability");
+    } catch (err) {
+      if (!isSessionExpired(err)) toast.error("Failed to save availability");
     } finally {
       setSavingHours(false);
     }
