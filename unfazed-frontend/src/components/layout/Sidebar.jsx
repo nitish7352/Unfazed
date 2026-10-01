@@ -8,6 +8,7 @@ const navItems = [
   { to: "/sessions", label: "Sessions", icon: "📋" },
   { to: "/sessions/calendar", label: "Calendar", icon: "📅" },
   { to: "/notes", label: "Notes", icon: "📝" },
+  { to: "/chat", label: "Chat", icon: "💬" },
   { to: "/billing", label: "Billing", icon: "💳" },
   { to: "/analytics", label: "Analytics", icon: "📊" },
   { to: "/settings", label: "Settings", icon: "⚙" },

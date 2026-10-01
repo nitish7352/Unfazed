@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 const app    = require('./app');
 const connectDB = require('./src/config/db');
 const setupVideoSocket = require('./src/sockets/videoSocket');
+const setupChatSocket  = require('./src/sockets/chatSocket');
 
 const PORT = process.env.PORT || 5000;
 
@@ -22,6 +23,7 @@ const io = new Server(server, {
 });
 
 setupVideoSocket(io);
+setupChatSocket(io);
 app.set('io', io);
 
 const start = async () => {

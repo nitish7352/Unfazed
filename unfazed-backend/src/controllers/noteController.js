@@ -84,7 +84,7 @@ const updateNote = asyncHandler(async (req, res) => {
   const allowedFields = [
     'format', 'subjective', 'objective', 'assessment', 'plan',
     'data', 'content', 'diagnosisCodes', 'homework', 'followUp',
-    'clientMood', 'riskLevel', 'suicidalIdeation',
+    'clientMood', 'riskLevel', 'suicidalIdeation', 'visibility',
   ];
 
   allowedFields.forEach((f) => {
@@ -126,4 +126,33 @@ const deleteNote = asyncHandler(async (req, res) => {
   return successResponse(res, {}, 'Note deleted');
 });
 
-module.exports = { getNotes, getNoteBySession, getNote, updateNote, signNote, deleteNote };
+// @desc    Toggle note visibility private <-> shared
+// @route   PUT /api/notes/:id/visibility
+// @access  Private (therapist only)
+const toggleVisibility = asyncHandler(async (req, res) => {
+  const note = await SessionNote.findOne({ _id: req.params.id, therapist: req.user._id });
+  if (!note) return errorResponse(res, 'Note not found', 404);
+  if (note.isLocked) return errorResponse(res, 'Cannot change visibility of a locked note', 403);
+
+  note.visibility = note.visibility === 'shared' ? 'private' : 'shared';
+  await note.save();
+  return successResponse(res, { note }, `Note is now ${note.visibility}`);
+});
+
+// @desc    Get shared notes for a client (client portal use)
+// @route   GET /api/notes/shared/:clientId
+// @access  Private — NEVER returns private notes
+const getSharedNotes = asyncHandler(async (req, res) => {
+  const notes = await SessionNote.find({
+    therapist:  req.user._id,
+    client:     req.params.clientId,
+    visibility: 'shared',   // ← strict filter: private notes never reach this query
+  })
+    .select('-subjective -objective -assessment -plan -data -riskLevel -suicidalIdeation -diagnosisCodes') // strip clinical fields
+    .populate({ path: 'session', select: 'startTime type modality' })
+    .sort({ createdAt: -1 });
+
+  return successResponse(res, { notes });
+});
+
+module.exports = { getNotes, getNoteBySession, getNote, updateNote, signNote, deleteNote, toggleVisibility, getSharedNotes };

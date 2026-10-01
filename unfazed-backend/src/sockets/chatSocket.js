@@ -1,98 +1,108 @@
 /**
  * Chat Socket Handler — Module 6
  * Real-time in-app chat between therapist and client using Socket.io.
- * Rooms: "chat:<therapistId>:<clientId>"
+ * Messages are persisted to MongoDB (ChatMessage model).
+ * Room naming: "chat:<therapistId>:<clientId>"
  */
-const mongoose = require("mongoose");
-
-// In-memory message store (replace with MongoDB collection for persistence)
-const messageHistory = new Map(); // roomId -> messages[]
+const ChatMessage = require('../models/ChatMessage');
 
 function setupChatSocket(io) {
-  // Namespace: /chat
-  const chat = io.of("/chat");
+  const chat = io.of('/chat');
 
-  chat.on("connection", (socket) => {
-    console.log(`[Chat] Socket connected: ${socket.id}`);
+  chat.on('connection', (socket) => {
+    console.log(`[Chat] connected: ${socket.id}`);
 
-    // ── Join a chat room ────────────────────────────────────────────────
-    socket.on("join_chat", ({ therapistId, clientId, userId }) => {
+    // ── Join room ──────────────────────────────────────────────────────
+    socket.on('join_chat', async ({ therapistId, clientId, userId }) => {
       if (!therapistId || !clientId) return;
 
       const roomId = `chat:${therapistId}:${clientId}`;
       socket.join(roomId);
-      socket.roomId   = roomId;
-      socket.userId   = userId;
-      socket.userType = String(userId) === String(therapistId) ? "therapist" : "client";
+      socket.roomId      = roomId;
+      socket.userId      = userId;
+      socket.therapistId = therapistId;
+      socket.clientId    = clientId;
+      socket.userType    = String(userId) === String(therapistId) ? 'therapist' : 'client';
 
-      // Send last 50 messages to the joining user
-      const history = (messageHistory.get(roomId) || []).slice(-50);
-      socket.emit("chat_history", history);
+      // Send last 50 persisted messages
+      try {
+        const history = await ChatMessage.find({ therapist: therapistId, client: clientId })
+          .sort({ createdAt: -1 })
+          .limit(50)
+          .lean();
+        socket.emit('chat_history', history.reverse());
+      } catch (err) {
+        console.error('[Chat] history load error:', err.message);
+        socket.emit('chat_history', []);
+      }
 
-      socket.to(roomId).emit("user_joined", {
+      socket.to(roomId).emit('user_joined', {
         userId,
-        userType: socket.userType,
+        userType:  socket.userType,
         timestamp: new Date().toISOString(),
       });
 
-      console.log(`[Chat] ${socket.userType} ${userId} joined room ${roomId}`);
+      console.log(`[Chat] ${socket.userType} ${userId} joined ${roomId}`);
     });
 
     // ── Send message ────────────────────────────────────────────────────
-    socket.on("send_message", ({ text, attachmentUrl }) => {
+    socket.on('send_message', async ({ text, attachmentUrl }) => {
       if (!socket.roomId || !text?.trim()) return;
 
-      const msg = {
-        id:            new mongoose.Types.ObjectId().toString(),
-        roomId:        socket.roomId,
-        senderId:      socket.userId,
-        senderType:    socket.userType,
-        text:          text.trim(),
-        attachmentUrl: attachmentUrl || null,
-        timestamp:     new Date().toISOString(),
-        readBy:        [socket.userId],
-      };
+      try {
+        const msg = await ChatMessage.create({
+          therapist:     socket.therapistId,
+          client:        socket.clientId,
+          senderId:      socket.userId,
+          senderType:    socket.userType,
+          text:          text.trim(),
+          attachmentUrl: attachmentUrl || null,
+          readBy:        [socket.userId],
+        });
 
-      // Store in history
-      if (!messageHistory.has(socket.roomId)) messageHistory.set(socket.roomId, []);
-      messageHistory.get(socket.roomId).push(msg);
-
-      // Emit to all in room (including sender for confirmation)
-      chat.to(socket.roomId).emit("new_message", msg);
-    });
-
-    // ── Typing indicator ────────────────────────────────────────────────
-    socket.on("typing_start", () => {
-      if (!socket.roomId) return;
-      socket.to(socket.roomId).emit("typing", { userId: socket.userId, typing: true });
-    });
-
-    socket.on("typing_stop", () => {
-      if (!socket.roomId) return;
-      socket.to(socket.roomId).emit("typing", { userId: socket.userId, typing: false });
-    });
-
-    // ── Read receipts ────────────────────────────────────────────────────
-    socket.on("mark_read", ({ messageId }) => {
-      if (!socket.roomId) return;
-      const history = messageHistory.get(socket.roomId) || [];
-      const msg = history.find((m) => m.id === messageId);
-      if (msg && !msg.readBy.includes(socket.userId)) {
-        msg.readBy.push(socket.userId);
-        chat.to(socket.roomId).emit("message_read", { messageId, readBy: msg.readBy });
+        // Emit to everyone in the room (including sender — confirms delivery)
+        chat.to(socket.roomId).emit('new_message', msg.toObject());
+      } catch (err) {
+        console.error('[Chat] save error:', err.message);
+        socket.emit('message_error', { error: 'Failed to send message' });
       }
     });
 
+    // ── Typing indicators ───────────────────────────────────────────────
+    socket.on('typing_start', () => {
+      if (socket.roomId)
+        socket.to(socket.roomId).emit('typing', { userId: socket.userId, typing: true });
+    });
+
+    socket.on('typing_stop', () => {
+      if (socket.roomId)
+        socket.to(socket.roomId).emit('typing', { userId: socket.userId, typing: false });
+    });
+
+    // ── Read receipt ────────────────────────────────────────────────────
+    socket.on('mark_read', async ({ messageId }) => {
+      if (!socket.roomId) return;
+      try {
+        await ChatMessage.findByIdAndUpdate(messageId, {
+          $addToSet: { readBy: socket.userId },
+        });
+        chat.to(socket.roomId).emit('message_read', {
+          messageId,
+          readBy: socket.userId,
+        });
+      } catch { /* non-fatal */ }
+    });
+
     // ── Disconnect ───────────────────────────────────────────────────────
-    socket.on("disconnect", () => {
+    socket.on('disconnect', () => {
       if (socket.roomId) {
-        socket.to(socket.roomId).emit("user_left", {
+        socket.to(socket.roomId).emit('user_left', {
           userId:    socket.userId,
           userType:  socket.userType,
           timestamp: new Date().toISOString(),
         });
       }
-      console.log(`[Chat] Socket disconnected: ${socket.id}`);
+      console.log(`[Chat] disconnected: ${socket.id}`);
     });
   });
 

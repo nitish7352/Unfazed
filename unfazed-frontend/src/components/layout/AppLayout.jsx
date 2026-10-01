@@ -9,6 +9,7 @@ const pageTitles = {
   "/sessions/calendar": "Calendar",
   "/sessions": "Sessions",
   "/notes": "Session Notes",
+  "/chat": "Chat",
   "/billing": "Billing & Invoices",
   "/analytics": "Analytics",
   "/settings/subscription": "Subscription",

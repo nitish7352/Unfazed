@@ -39,6 +39,15 @@ const sessionNoteSchema = new mongoose.Schema(
     riskLevel:      { type: String, enum: ['low', 'medium', 'high', 'crisis', null], default: null },
     suicidalIdeation: { type: Boolean, default: false },
 
+    // Visibility — Module 5
+    // 'private'  : only the therapist can see this note (default)
+    // 'shared'   : client can also read this note via the client portal
+    visibility: {
+      type:    String,
+      enum:    ['private', 'shared'],
+      default: 'private',
+    },
+
     // Signature / lock
     isSigned:   { type: Boolean, default: false },
     signedAt:   { type: Date, default: null },

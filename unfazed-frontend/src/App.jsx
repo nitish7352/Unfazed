@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+﻿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ToastProvider } from "./components/common/Toast";
@@ -26,6 +26,7 @@ import AnalyticsPage from "./pages/analytics/AnalyticsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import SubscriptionPage from "./pages/settings/SubscriptionPage";
 import VideoRoomPage from "./pages/VideoRoomPage";
+import ChatPage from "./pages/chat/ChatPage";
 
 function App() {
   return (
@@ -70,6 +71,8 @@ function App() {
                       element={<NoteEditorPage />}
                     />
                     <Route path="/billing" element={<BillingPage />} />
+                    <Route path="/chat" element={<ChatPage />} />
+                    <Route path="/chat/:clientId" element={<ChatPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route
