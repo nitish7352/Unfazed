@@ -1,4 +1,4 @@
-const Invoice = require('../models/Invoice');
+﻿const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
 const Session = require('../models/Session');
 const asyncHandler = require('../utils/asyncHandler');
@@ -7,8 +7,11 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
 // Detect placeholder/example values that aren't real keys
-const isValidRzpKey = (val) => val && val.trim() && val.startsWith('rzp_');
-const isValidRzpSecret = (val) => val && val.trim().length >= 20 && !val.includes('your_') && !val.includes('secret');
+const REAL_KEY_ID     = 'rzp_test_TiNBqobbpz64rc';
+const REAL_KEY_SECRET = 'PST0SEgyQAjZdbmdp1kwc7tz';
+// Use env var only if it looks like a real key (not a placeholder like rzp_test_XXXXXXXXXX)
+const isValidRzpKey    = (v) => v && v.startsWith('rzp_') && v.length > 20 && !v.includes('XXXX') && !v.includes('your');
+const isValidRzpSecret = (v) => v && v.length >= 20 && !v.includes('your_') && !v.includes('secret') && !v.includes('XXXX');
 
 const RZP_KEY_ID     = isValidRzpKey(process.env.RAZORPAY_KEY_ID)         ? process.env.RAZORPAY_KEY_ID.trim()     : 'rzp_test_TiNBqobbpz64rc';
 const RZP_KEY_SECRET = isValidRzpSecret(process.env.RAZORPAY_KEY_SECRET)  ? process.env.RAZORPAY_KEY_SECRET.trim() : 'PST0SEgyQAjZdbmdp1kwc7tz';

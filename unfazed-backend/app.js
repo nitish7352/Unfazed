@@ -124,8 +124,8 @@ app.get('/api/health', (req, res) => {
   const dbStatus = ['disconnected','connected','connecting','disconnecting'][dbState] || 'unknown';
   const healthy  = dbState === 1;
 
-  const isValidKey    = (v) => v && v.trim() && v.startsWith('rzp_');
-  const isValidSecret = (v) => v && v.trim().length >= 20 && !v.includes('your_') && !v.includes('secret');
+  const isValidKey    = (v) => v && v.startsWith('rzp_') && v.length > 20 && !v.includes('XXXX') && !v.includes('your');
+  const isValidSecret = (v) => v && v.length >= 20 && !v.includes('your_') && !v.includes('secret') && !v.includes('XXXX');
   const rzKeyId     = isValidKey(process.env.RAZORPAY_KEY_ID)        ? process.env.RAZORPAY_KEY_ID.trim()     : 'rzp_test_TiNBqobbpz64rc';
   const rzKeySecret = isValidSecret(process.env.RAZORPAY_KEY_SECRET) ? process.env.RAZORPAY_KEY_SECRET.trim() : 'PST0SEgyQAjZdbmdp1kwc7tz';
   res.status(healthy ? 200 : 503).json({
