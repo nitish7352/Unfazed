@@ -10,10 +10,12 @@ const PLANS = {
   enterprise: { name: 'Enterprise', price: 599900,  interval: 'monthly', maxClients: 9999 },
 };
 
-// Fallback to hardcoded test keys if env vars are not set on the server.
-// .trim() handles the case where Render sets the var to an empty string.
-const RZP_KEY_ID     = (process.env.RAZORPAY_KEY_ID     || '').trim() || 'rzp_test_TiNBqobbpz64rc';
-const RZP_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || '').trim() || 'PST0SEgyQAjZdbmdp1kwc7tz';
+// Detect placeholder/example values that aren't real keys
+const isValidRzpKey    = (v) => v && v.trim() && v.startsWith('rzp_');
+const isValidRzpSecret = (v) => v && v.trim().length >= 20 && !v.includes('your_') && !v.includes('secret');
+
+const RZP_KEY_ID     = isValidRzpKey(process.env.RAZORPAY_KEY_ID)        ? process.env.RAZORPAY_KEY_ID.trim()     : 'rzp_test_TiNBqobbpz64rc';
+const RZP_KEY_SECRET = isValidRzpSecret(process.env.RAZORPAY_KEY_SECRET) ? process.env.RAZORPAY_KEY_SECRET.trim() : 'PST0SEgyQAjZdbmdp1kwc7tz';
 
 const getRazorpay = () => new Razorpay({
   key_id:     RZP_KEY_ID,

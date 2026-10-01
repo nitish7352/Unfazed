@@ -6,13 +6,17 @@ const { successResponse, errorResponse, paginatedResponse } = require('../utils/
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
-const getRazorpay = () => new Razorpay({
-  key_id:     (process.env.RAZORPAY_KEY_ID     || '').trim() || 'rzp_test_TiNBqobbpz64rc',
-  key_secret: (process.env.RAZORPAY_KEY_SECRET || '').trim() || 'PST0SEgyQAjZdbmdp1kwc7tz',
-});
+// Detect placeholder/example values that aren't real keys
+const isValidRzpKey = (val) => val && val.trim() && val.startsWith('rzp_');
+const isValidRzpSecret = (val) => val && val.trim().length >= 20 && !val.includes('your_') && !val.includes('secret');
 
-const RZP_KEY_ID     = (process.env.RAZORPAY_KEY_ID     || '').trim() || 'rzp_test_TiNBqobbpz64rc';
-const RZP_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || '').trim() || 'PST0SEgyQAjZdbmdp1kwc7tz';
+const RZP_KEY_ID     = isValidRzpKey(process.env.RAZORPAY_KEY_ID)         ? process.env.RAZORPAY_KEY_ID.trim()     : 'rzp_test_TiNBqobbpz64rc';
+const RZP_KEY_SECRET = isValidRzpSecret(process.env.RAZORPAY_KEY_SECRET)  ? process.env.RAZORPAY_KEY_SECRET.trim() : 'PST0SEgyQAjZdbmdp1kwc7tz';
+
+const getRazorpay = () => new Razorpay({
+  key_id:     RZP_KEY_ID,
+  key_secret: RZP_KEY_SECRET,
+});
 
 // Generate a unique invoice number using timestamp + random suffix to avoid
 // duplicate key errors when invoices have been deleted (count-based numbering
