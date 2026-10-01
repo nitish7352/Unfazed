@@ -7,15 +7,29 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
 const getRazorpay = () => new Razorpay({
-  key_id:     process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id:     (process.env.RAZORPAY_KEY_ID     || '').trim() || 'rzp_test_TiNBqobbpz64rc',
+  key_secret: (process.env.RAZORPAY_KEY_SECRET || '').trim() || 'PST0SEgyQAjZdbmdp1kwc7tz',
 });
 
-// Generate a sequential invoice number
+const RZP_KEY_ID     = (process.env.RAZORPAY_KEY_ID     || '').trim() || 'rzp_test_TiNBqobbpz64rc';
+const RZP_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || '').trim() || 'PST0SEgyQAjZdbmdp1kwc7tz';
+
+// Generate a unique invoice number using timestamp + random suffix to avoid
+// duplicate key errors when invoices have been deleted (count-based numbering
+// breaks when documents are removed from the collection).
 const generateInvoiceNumber = async (therapistId) => {
-  const count = await Invoice.countDocuments({ therapist: therapistId });
-  const year  = new Date().getFullYear();
-  return `INV-${year}-${String(count + 1).padStart(4, '0')}`;
+  const year    = new Date().getFullYear();
+  const month   = String(new Date().getMonth() + 1).padStart(2, '0');
+  const random  = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const base    = `INV-${year}${month}-${random}`;
+
+  // Extremely unlikely, but guard against the rare collision
+  const exists = await Invoice.findOne({ invoiceNumber: base });
+  if (exists) {
+    const extra = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `${base}-${extra}`;
+  }
+  return base;
 };
 
 // @desc    Get all invoices
@@ -139,7 +153,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     orderId:   order.id,
     amount:    order.amount,
     currency:  order.currency,
-    keyId:     process.env.RAZORPAY_KEY_ID,
+    keyId:     RZP_KEY_ID,
     invoiceId: invoice._id,
   });
 });
@@ -154,7 +168,7 @@ const verifyPayment = asyncHandler(async (req, res) => {
   if (!invoice) return errorResponse(res, 'Invoice not found', 404);
 
   const expectedSignature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .createHmac('sha256', RZP_KEY_SECRET)
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
     .digest('hex');
 
