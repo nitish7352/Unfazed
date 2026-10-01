@@ -1,4 +1,4 @@
-// Load .env only in development — Render injects env vars directly
+﻿// Load .env only in development — Render injects env vars directly
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
@@ -124,6 +124,8 @@ app.get('/api/health', (req, res) => {
   const dbStatus = ['disconnected','connected','connecting','disconnecting'][dbState] || 'unknown';
   const healthy  = dbState === 1;
 
+  const rzKeyId     = process.env.RAZORPAY_KEY_ID     || 'NOT_SET';
+  const rzKeySecret = process.env.RAZORPAY_KEY_SECRET || 'NOT_SET';
   res.status(healthy ? 200 : 503).json({
     success:     healthy,
     message:     healthy ? 'Unfazed API is running' : 'Database not connected',
@@ -132,6 +134,10 @@ app.get('/api/health', (req, res) => {
     uptime:      Math.floor(process.uptime()) + 's',
     database:    dbStatus,
     version:     '1.0.0',
+    razorpay: {
+      key_id:     rzKeyId,
+      key_secret: rzKeySecret !== 'NOT_SET' ? rzKeySecret.substring(0,6)+'...'+rzKeySecret.slice(-4)+' ('+rzKeySecret.length+' chars)' : 'NOT_SET',
+    },
   });
 });
 
