@@ -11,6 +11,9 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
+import JoinAsTherapistPage from "./pages/JoinAsTherapistPage";
 
 // App pages
 import DashboardPage from "./pages/dashboard/DashboardPage";
@@ -38,6 +41,12 @@ function App() {
               <Routes>
                 {/* ── Public routes ── */}
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route
+                  path="/join-as-therapist"
+                  element={<JoinAsTherapistPage />}
+                />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
 

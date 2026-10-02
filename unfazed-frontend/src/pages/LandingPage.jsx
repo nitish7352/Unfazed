@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 /* ── Data ───────────────────────────────────────────────────────────────── */
@@ -186,7 +187,12 @@ const Stars = ({ count = 5 }) => (
 );
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
-const LandingPage = () => (
+const LandingPage = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  return (
   <div
     className="min-h-screen bg-white text-slate-900"
     style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
@@ -202,7 +208,7 @@ const LandingPage = () => (
             Unfazed
           </span>
         </div>
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
+        <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-500">
           <a
             href="#therapists"
             className="hover:text-indigo-600 transition-colors"
@@ -221,6 +227,21 @@ const LandingPage = () => (
           >
             Pricing
           </a>
+          <Link to="/about" className="hover:text-indigo-600 transition-colors">
+            About
+          </Link>
+          <Link
+            to="/contact"
+            className="hover:text-indigo-600 transition-colors"
+          >
+            Contact
+          </Link>
+          <Link
+            to="/join-as-therapist"
+            className="hover:text-indigo-600 transition-colors"
+          >
+            Join as Therapist
+          </Link>
         </nav>
         <div className="flex items-center gap-3">
           <Link
@@ -235,8 +256,41 @@ const LandingPage = () => (
           >
             Get started free
           </Link>
+          <button
+            type="button"
+            className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50"
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            {mobileMenuOpen ? (
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="m6 6 12 12M18 6 6 18" />
+              </svg>
+            ) : (
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
+      {mobileMenuOpen && (
+        <nav
+          id="mobile-navigation"
+          className="lg:hidden border-t border-slate-100 bg-white px-6 py-3 shadow-lg"
+        >
+          <div className="mx-auto flex max-w-6xl flex-col text-sm font-medium text-slate-600">
+            <a href="#therapists" onClick={closeMobileMenu} className="rounded-lg px-3 py-3 hover:bg-indigo-50 hover:text-indigo-700">Our Therapists</a>
+            <a href="#features" onClick={closeMobileMenu} className="rounded-lg px-3 py-3 hover:bg-indigo-50 hover:text-indigo-700">Features</a>
+            <a href="#pricing" onClick={closeMobileMenu} className="rounded-lg px-3 py-3 hover:bg-indigo-50 hover:text-indigo-700">Pricing</a>
+            <Link to="/about" onClick={closeMobileMenu} className="rounded-lg px-3 py-3 hover:bg-indigo-50 hover:text-indigo-700">About</Link>
+            <Link to="/contact" onClick={closeMobileMenu} className="rounded-lg px-3 py-3 hover:bg-indigo-50 hover:text-indigo-700">Contact</Link>
+            <Link to="/join-as-therapist" onClick={closeMobileMenu} className="rounded-lg px-3 py-3 hover:bg-indigo-50 hover:text-indigo-700">Join as Therapist</Link>
+          </div>
+        </nav>
+      )}
     </header>
 
     {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -672,16 +726,37 @@ const LandingPage = () => (
             </ul>
           </div>
           <div>
+            <h4 className="font-semibold text-white text-sm mb-3">Company</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link
+                  to="/about"
+                  className="hover:text-white transition-colors"
+                >
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  className="hover:text-white transition-colors"
+                >
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
             <h4 className="font-semibold text-white text-sm mb-3">
               For Therapists
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  to="/register"
+                  to="/join-as-therapist"
                   className="hover:text-white transition-colors"
                 >
-                  Join as therapist
+                  Join as Therapist
                 </Link>
               </li>
               <li>
@@ -689,7 +764,15 @@ const LandingPage = () => (
                   to="/login"
                   className="hover:text-white transition-colors"
                 >
-                  Therapist login
+                  Therapist Login
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/register"
+                  className="hover:text-white transition-colors"
+                >
+                  Create Account
                 </Link>
               </li>
             </ul>
@@ -720,7 +803,19 @@ const LandingPage = () => (
           <p className="text-sm">
             Therapy practice management · Made in India 🇮🇳
           </p>
-          <div className="flex gap-5 text-sm">
+          <div className="flex flex-wrap gap-5 text-sm">
+            <Link to="/about" className="hover:text-white transition-colors">
+              About
+            </Link>
+            <Link to="/contact" className="hover:text-white transition-colors">
+              Contact
+            </Link>
+            <Link
+              to="/join-as-therapist"
+              className="hover:text-white transition-colors"
+            >
+              Join as Therapist
+            </Link>
             <Link to="/login" className="hover:text-white transition-colors">
               Login
             </Link>
@@ -736,6 +831,7 @@ const LandingPage = () => (
       </div>
     </footer>
   </div>
-);
+  );
+};
 
 export default LandingPage;
