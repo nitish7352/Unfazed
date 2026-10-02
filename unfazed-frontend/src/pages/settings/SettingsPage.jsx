@@ -172,19 +172,21 @@ const SettingsPage = () => {
 
   return (
     <div className="max-w-2xl space-y-4">
-      <h2 className="text-xl font-bold text-slate-900">Settings</h2>
+      <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+        Settings
+      </h2>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-slate-200">
+      <div className="flex gap-0 border-b border-[var(--border)] -mx-1 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px
+            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap
               ${
                 activeTab === tab
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  ? "border-[var(--primary)] text-[var(--primary)] font-semibold"
+                  : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-slate-300"
               }`}
           >
             {tab}
@@ -196,8 +198,10 @@ const SettingsPage = () => {
       {activeTab === "Profile" && (
         <div className="space-y-5">
           {/* Avatar */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">Profile photo</h3>
+          <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-6">
+            <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">
+              Profile photo
+            </h3>
             <div className="flex items-center gap-5">
               <Avatar
                 src={user?.avatar}
@@ -207,8 +211,8 @@ const SettingsPage = () => {
               <div>
                 <label className="cursor-pointer">
                   <span
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border
-                    border-slate-300 text-sm font-medium hover:bg-slate-50 transition-colors
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[var(--radius)] border
+                    border-[var(--border)] text-sm font-medium hover:bg-slate-50 transition-colors
                     ${avatarLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {avatarLoading && <Spinner size="sm" />}
@@ -222,7 +226,7 @@ const SettingsPage = () => {
                     disabled={avatarLoading}
                   />
                 </label>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-[var(--text-muted)] mt-1">
                   JPG, PNG or GIF · Max 5 MB
                 </p>
               </div>
@@ -230,9 +234,9 @@ const SettingsPage = () => {
           </div>
 
           {/* Profile form */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-4">
-              Personal & practice info
+          <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-6">
+            <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">
+              Personal &amp; practice info
             </h3>
             <form
               onSubmit={handleProfile(onSaveProfile)}
@@ -259,13 +263,13 @@ const SettingsPage = () => {
               />
 
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[var(--text-primary)]">
                   Bio
                 </label>
                 <textarea
                   rows={3}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-[var(--radius)] border border-[var(--border)] text-sm
+                  focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] resize-none bg-white"
                   {...regProfile("bio")}
                 />
               </div>
@@ -304,12 +308,12 @@ const SettingsPage = () => {
                   {...regProfile("defaultSessionRate")}
                 />
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-slate-700">
+                  <label className="text-sm font-medium text-[var(--text-primary)]">
                     Timezone
                   </label>
                   <select
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm
-                    focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-[var(--radius)] border border-[var(--border)] text-sm
+                    focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] bg-white appearance-none"
                     {...regProfile("timezone")}
                   >
                     <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
@@ -355,8 +359,10 @@ const SettingsPage = () => {
 
       {/* ── Security tab ─────────────────────────────────────────────────── */}
       {activeTab === "Security" && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h3 className="font-semibold text-slate-900 mb-4">Change password</h3>
+        <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-6">
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">
+            Change password
+          </h3>
           <form
             onSubmit={handlePassword(onChangePassword)}
             noValidate
@@ -395,9 +401,11 @@ const SettingsPage = () => {
 
       {/* ── Availability tab ─────────────────────────────────────────────── */}
       {activeTab === "Availability" && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-6">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-semibold text-slate-900">Working hours</h3>
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">
+              Working hours
+            </h3>
             <Button size="sm" loading={savingHours} onClick={saveAvailability}>
               Save
             </Button>
@@ -413,7 +421,7 @@ const SettingsPage = () => {
                     aria-checked={h.enabled}
                     onClick={() => updateHour(h.day, "enabled", !h.enabled)}
                     className={`relative inline-flex w-9 h-5 rounded-full transition-colors flex-shrink-0
-                      ${h.enabled ? "bg-indigo-600" : "bg-slate-300"}`}
+                      ${h.enabled ? "bg-[var(--primary)]" : "bg-slate-300"}`}
                   >
                     <span
                       className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow
@@ -421,7 +429,7 @@ const SettingsPage = () => {
                     />
                   </button>
                   <span
-                    className={`text-sm font-medium ${h.enabled ? "text-slate-900" : "text-slate-400"}`}
+                    className={`text-sm font-medium ${h.enabled ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}
                   >
                     {DAYS[h.day]}
                   </span>
@@ -435,22 +443,22 @@ const SettingsPage = () => {
                       onChange={(e) =>
                         updateHour(h.day, "start", e.target.value)
                       }
-                      className="px-2 py-1.5 rounded-lg border border-slate-300 text-sm
-                        focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="px-2 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-sm
+                        focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]"
                       aria-label={`${DAYS[h.day]} start time`}
                     />
-                    <span className="text-slate-400 text-sm">to</span>
+                    <span className="text-[var(--text-muted)] text-sm">to</span>
                     <input
                       type="time"
                       value={h.end}
                       onChange={(e) => updateHour(h.day, "end", e.target.value)}
-                      className="px-2 py-1.5 rounded-lg border border-slate-300 text-sm
-                        focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="px-2 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-sm
+                        focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]"
                       aria-label={`${DAYS[h.day]} end time`}
                     />
                   </div>
                 ) : (
-                  <span className="text-sm text-slate-400 italic">
+                  <span className="text-sm text-[var(--text-muted)] italic">
                     Unavailable
                   </span>
                 )}
@@ -462,12 +470,14 @@ const SettingsPage = () => {
 
       {/* ── Subscription tab ─────────────────────────────────────────────── */}
       {activeTab === "Subscription" && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center">
-          <p className="text-slate-500 mb-4">Manage your plan and billing</p>
+        <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-6 text-center">
+          <p className="text-[var(--text-secondary)] mb-4">
+            Manage your plan and billing
+          </p>
           <Link to="/settings/subscription">
             <Button>View subscription plans</Button>
           </Link>
-          <div className="mt-4 p-3 bg-indigo-50 rounded-lg text-sm text-indigo-700">
+          <div className="mt-4 p-4 bg-[var(--primary-light)] rounded-[var(--radius)] text-sm text-[var(--primary)]">
             Current plan:{" "}
             <strong className="capitalize">
               {user?.subscription?.plan || "Free"}

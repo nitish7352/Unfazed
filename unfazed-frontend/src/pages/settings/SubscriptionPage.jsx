@@ -189,25 +189,27 @@ const SubscriptionPage = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Subscription</h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+          Subscription
+        </h2>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">
           Manage your plan and billing
         </p>
       </div>
 
       {/* Checkout open banner */}
       {checkoutOpen && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-indigo-50 border border-indigo-200 rounded-xl text-sm text-indigo-700">
-          <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3.5 bg-[var(--primary-light)] border border-indigo-200 rounded-[var(--radius-lg)] text-sm text-[var(--primary)]">
+          <span className="w-4 h-4 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin flex-shrink-0" />
           Razorpay checkout is open — complete or close it to continue.
         </div>
       )}
 
       {/* Current plan */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <p className="text-sm text-slate-500">Current plan</p>
+            <p className="text-sm text-[var(--text-secondary)]">Current plan</p>
             <div className="flex items-center gap-3 mt-1">
               <span
                 className={`text-2xl font-bold capitalize ${PLAN_DETAILS[currentPlan]?.color}`}
@@ -215,14 +217,14 @@ const SubscriptionPage = () => {
                 {PLAN_DETAILS[currentPlan]?.label || currentPlan}
               </span>
               <span
-                className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize
-                ${currentStatus === "active" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize ring-1 ring-inset
+                ${currentStatus === "active" ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-amber-50 text-amber-700 ring-amber-200"}`}
               >
                 {currentStatus}
               </span>
             </div>
             {subData?.endDate && (
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-[var(--text-muted)] mt-1">
                 Renews {format(new Date(subData.endDate), "MMM d, yyyy")}
               </p>
             )}
@@ -251,25 +253,27 @@ const SubscriptionPage = () => {
           return (
             <div
               key={planKey}
-              className={`bg-white rounded-xl border-2 p-5 flex flex-col transition-all
-                ${isCurrent ? "border-indigo-500 shadow-md" : "border-slate-200 hover:border-slate-300"}`}
+              className={`bg-[var(--surface)] rounded-[var(--radius-xl)] border-2 p-6 flex flex-col transition-all duration-200
+                ${isCurrent ? "border-[var(--primary)] shadow-[var(--shadow-md)]" : "border-[var(--border)] hover:border-indigo-300 hover:shadow-[var(--shadow-sm)]"}`}
             >
               <div
-                className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full self-start mb-3 ${plan.bg} ${plan.color}`}
+                className={`text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full self-start mb-3 ${plan.bg} ${plan.color}`}
               >
                 {plan.label}
               </div>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-3xl font-bold text-[var(--text-primary)]">
                 {plan.price}
-                <span className="text-sm font-normal text-slate-400">/mo</span>
+                <span className="text-sm font-normal text-[var(--text-muted)]">
+                  /mo
+                </span>
               </p>
               <ul className="mt-4 space-y-2 flex-1">
                 {plan.features.map((f) => (
                   <li
                     key={f}
-                    className="text-sm text-slate-600 flex items-start gap-2"
+                    className="text-sm text-[var(--text-secondary)] flex items-start gap-2"
                   >
-                    <span className="text-emerald-500 flex-shrink-0 mt-0.5">
+                    <span className="text-[var(--success)] flex-shrink-0 mt-0.5">
                       ✓
                     </span>
                     {f}
@@ -278,7 +282,7 @@ const SubscriptionPage = () => {
               </ul>
               <div className="mt-5">
                 {isCurrent ? (
-                  <div className="text-center text-sm font-medium text-indigo-600 py-1.5">
+                  <div className="text-center text-sm font-semibold text-[var(--primary)] py-2 bg-[var(--primary-light)] rounded-[var(--radius-sm)]">
                     Current plan
                   </div>
                 ) : planKey === "free" ? (

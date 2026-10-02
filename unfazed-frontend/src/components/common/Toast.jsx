@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from "react";
 
 const ToastContext = createContext(null);
 
@@ -7,10 +7,13 @@ let toastId = 0;
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = useCallback((message, type = 'info', duration = 4000) => {
+  const addToast = useCallback((message, type = "info", duration = 4000) => {
     const id = ++toastId;
     setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), duration);
+    setTimeout(
+      () => setToasts((prev) => prev.filter((t) => t.id !== id)),
+      duration,
+    );
   }, []);
 
   const removeToast = useCallback((id) => {
@@ -18,20 +21,24 @@ export const ToastProvider = ({ children }) => {
   }, []);
 
   const toast = {
-    success: (msg) => addToast(msg, 'success'),
-    error:   (msg) => addToast(msg, 'error'),
-    info:    (msg) => addToast(msg, 'info'),
-    warning: (msg) => addToast(msg, 'warning'),
+    success: (msg) => addToast(msg, "success"),
+    error: (msg) => addToast(msg, "error"),
+    info: (msg) => addToast(msg, "info"),
+    warning: (msg) => addToast(msg, "warning"),
   };
 
   const icons = {
-    success: '✓', error: '✕', info: 'ℹ', warning: '⚠',
+    success: <span style={{ color: "var(--success)" }}>✓</span>,
+    error: <span style={{ color: "var(--error)" }}>✕</span>,
+    info: <span style={{ color: "var(--primary)" }}>ℹ</span>,
+    warning: <span style={{ color: "var(--warning)" }}>⚠</span>,
   };
-  const colors = {
-    success: 'bg-emerald-50 border-emerald-300 text-emerald-800',
-    error:   'bg-red-50    border-red-300    text-red-800',
-    info:    'bg-blue-50   border-blue-300   text-blue-800',
-    warning: 'bg-amber-50  border-amber-300  text-amber-800',
+
+  const borderColors = {
+    success: "border-l-[var(--success)]",
+    error: "border-l-[var(--error)]",
+    info: "border-l-[var(--primary)]",
+    warning: "border-l-[var(--warning)]",
   };
 
   return (
@@ -41,21 +48,27 @@ export const ToastProvider = ({ children }) => {
       <div
         aria-live="polite"
         aria-atomic="false"
-        className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 max-w-sm"
+        className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 max-w-[360px] w-full"
       >
         {toasts.map((t) => (
           <div
             key={t.id}
             role="alert"
-            className={`flex items-start gap-3 px-4 py-3 rounded-lg border shadow-md text-sm animate-slide-up ${colors[t.type]}`}
+            className={`flex items-start gap-3 px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] border-l-4 ${borderColors[t.type]} bg-[var(--surface)] shadow-[var(--shadow-md)] text-sm animate-slide-up`}
           >
-            <span className="font-bold flex-shrink-0 mt-0.5">{icons[t.type]}</span>
-            <span className="flex-1">{t.message}</span>
+            <span className="w-5 h-5 flex-shrink-0 mt-0.5 font-bold text-sm flex items-center justify-center">
+              {icons[t.type]}
+            </span>
+            <span className="flex-1 text-[var(--text-primary)]">
+              {t.message}
+            </span>
             <button
               onClick={() => removeToast(t.id)}
               aria-label="Dismiss notification"
-              className="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
-            >✕</button>
+              className="flex-shrink-0 ml-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              ✕
+            </button>
           </div>
         ))}
       </div>
@@ -65,6 +78,6 @@ export const ToastProvider = ({ children }) => {
 
 export const useToast = () => {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used inside ToastProvider');
+  if (!ctx) throw new Error("useToast must be used inside ToastProvider");
   return ctx;
 };

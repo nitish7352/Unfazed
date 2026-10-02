@@ -40,7 +40,7 @@ const MONTHS = [
 /* ── Stat card ─────────────────────────────────────────────────────────── */
 const StatCard = ({ label, value, sub, color = "indigo", locked = false }) => {
   const colors = {
-    indigo: "text-indigo-600",
+    indigo: "text-[var(--primary)]",
     emerald: "text-emerald-600",
     amber: "text-amber-600",
     red: "text-red-500",
@@ -48,25 +48,27 @@ const StatCard = ({ label, value, sub, color = "indigo", locked = false }) => {
   };
   return (
     <div
-      className={`bg-white rounded-xl shadow-sm border border-slate-200 p-5 relative ${locked ? "opacity-60" : ""}`}
+      className={`bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-5 relative ${locked ? "opacity-60" : ""}`}
     >
       {locked && (
-        <span className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+        <span className="absolute top-2 right-2 text-xs bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200 px-1.5 py-0.5 rounded-full font-medium">
           🔒 Upgrade
         </span>
       )}
-      <p className="text-sm font-medium text-slate-500">{label}</p>
+      <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+        {label}
+      </p>
       <p className={`text-3xl font-bold mt-1 ${colors[color]}`}>
         {locked ? "—" : value}
       </p>
-      {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+      {sub && <p className="text-xs text-[var(--text-muted)] mt-1">{sub}</p>}
     </div>
   );
 };
 
 /* ── Upgrade prompt card ───────────────────────────────────────────────── */
 const UpgradeCard = ({ feature }) => (
-  <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+  <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-[var(--radius-lg)]">
     <span className="text-lg flex-shrink-0">🔒</span>
     <div className="flex-1 min-w-0">
       <p className="text-sm font-semibold text-amber-900">{feature.label}</p>
@@ -155,11 +157,13 @@ const AnalyticsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-slate-900">Analytics</h2>
+        <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+          Analytics
+        </h2>
         {upgradePrompts.plan === "free" && (
           <Link
             to="/settings/subscription"
-            className="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+            className="text-xs px-3 py-1.5 bg-[var(--primary)] text-white rounded-[var(--radius)] font-semibold hover:bg-[var(--primary-dark)] transition-colors"
           >
             Upgrade plan →
           </Link>
@@ -217,15 +221,15 @@ const AnalyticsPage = () => {
       )}
 
       {/* ── Revenue chart (gated) ── */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+      <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-5 md:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-slate-900">
+          <h3 className="font-semibold text-[var(--text-primary)]">
             Revenue (last 12 months)
           </h3>
           {revenueBlocked && (
             <Link
               to="/settings/subscription"
-              className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-lg font-medium hover:bg-amber-200 transition-colors"
+              className="text-xs bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200 px-2 py-1 rounded-[var(--radius-sm)] font-medium hover:bg-amber-100 transition-colors"
             >
               🔒 Upgrade to unlock
             </Link>
@@ -234,18 +238,18 @@ const AnalyticsPage = () => {
         {revenueBlocked ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <span className="text-4xl">📊</span>
-            <p className="font-medium text-slate-700">
+            <p className="font-medium text-[var(--text-secondary)]">
               Revenue charts are available on Basic plan and above
             </p>
             <Link
               to="/settings/subscription"
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+              className="px-4 py-2 bg-[var(--primary)] text-white text-sm font-semibold rounded-[var(--radius)] hover:bg-[var(--primary-dark)] transition-colors"
             >
               Upgrade now →
             </Link>
           </div>
         ) : revenueData.length === 0 ? (
-          <p className="text-slate-400 text-sm text-center py-8">
+          <p className="text-[var(--text-muted)] text-sm text-center py-8">
             No revenue data yet.
           </p>
         ) : (
@@ -256,11 +260,11 @@ const AnalyticsPage = () => {
             >
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis
                 tick={{ fontSize: 11 }}
@@ -272,7 +276,7 @@ const AnalyticsPage = () => {
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#6366f1"
+                stroke="#4F46E5"
                 strokeWidth={2}
                 fill="url(#colorRevenue)"
               />
@@ -282,12 +286,12 @@ const AnalyticsPage = () => {
       </div>
 
       {/* ── No-show rate chart — Module 7 ── */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-900 mb-4">
+      <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-5 md:p-6">
+        <h3 className="font-semibold text-[var(--text-primary)] mb-4">
           No-show rate (last 6 months)
         </h3>
         {noShowData.length === 0 ? (
-          <p className="text-slate-400 text-sm text-center py-8">
+          <p className="text-[var(--text-muted)] text-sm text-center py-8">
             No no-show data yet.
           </p>
         ) : (
@@ -296,7 +300,7 @@ const AnalyticsPage = () => {
               data={noShowData}
               margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis
                 tick={{ fontSize: 11 }}
@@ -307,9 +311,9 @@ const AnalyticsPage = () => {
               <Line
                 type="monotone"
                 dataKey="rate"
-                stroke="#ef4444"
+                stroke="#DC2626"
                 strokeWidth={2}
-                dot={{ fill: "#ef4444", r: 4 }}
+                dot={{ fill: "#DC2626", r: 4 }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -318,12 +322,12 @@ const AnalyticsPage = () => {
       </div>
 
       {/* ── Client growth chart ── */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-900 mb-4">
+      <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-5 md:p-6">
+        <h3 className="font-semibold text-[var(--text-primary)] mb-4">
           New clients (last 6 months)
         </h3>
         {clientData.length === 0 ? (
-          <p className="text-slate-400 text-sm text-center py-8">
+          <p className="text-[var(--text-muted)] text-sm text-center py-8">
             No client data yet.
           </p>
         ) : (
@@ -332,13 +336,13 @@ const AnalyticsPage = () => {
               data={clientData}
               margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
               <Bar
                 dataKey="count"
-                fill="#6366f1"
+                fill="#4F46E5"
                 radius={[4, 4, 0, 0]}
                 name="New clients"
               />
@@ -349,13 +353,13 @@ const AnalyticsPage = () => {
 
       {/* ── Upgrade prompts — Module 7 ── */}
       {upgradePrompts.locked.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-semibold text-slate-900">
+              <h3 className="font-semibold text-[var(--text-primary)]">
                 Unlock more features
               </h3>
-              <p className="text-sm text-slate-500 mt-0.5">
+              <p className="text-sm text-[var(--text-secondary)] mt-0.5">
                 {upgradePrompts.locked.length} feature
                 {upgradePrompts.locked.length > 1 ? "s" : ""} available on
                 higher plans
@@ -363,7 +367,7 @@ const AnalyticsPage = () => {
             </div>
             <Link
               to="/settings/subscription"
-              className="px-3 py-1.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+              className="px-3 py-1.5 bg-[var(--primary)] text-white text-sm font-semibold rounded-[var(--radius)] hover:bg-[var(--primary-dark)] transition-colors"
             >
               View plans →
             </Link>

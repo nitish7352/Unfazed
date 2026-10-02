@@ -7,6 +7,10 @@ import { useToast } from "../common/Toast";
 import Button from "../common/Button";
 import Input from "../common/Input";
 
+const selectCls =
+  "w-full px-3.5 py-2.5 rounded-[var(--radius)] border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] bg-white text-[var(--text-primary)] appearance-none";
+const labelCls = "text-sm font-medium text-[var(--text-primary)]";
+
 const SessionForm = ({
   onSuccess,
   onCancel,
@@ -59,15 +63,12 @@ const SessionForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
       <div className="flex flex-col gap-1">
-        <label
-          htmlFor="clientId"
-          className="text-sm font-medium text-slate-700"
-        >
-          Client <span className="text-red-500">*</span>
+        <label htmlFor="clientId" className={labelCls}>
+          Client <span className="text-[var(--error)]">*</span>
         </label>
         <select
           id="clientId"
-          className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className={selectCls}
           {...register("clientId", { required: "Client is required" })}
         >
           <option value="">Select a client…</option>
@@ -78,7 +79,9 @@ const SessionForm = ({
           ))}
         </select>
         {errors.clientId && (
-          <p className="text-xs text-red-500">{errors.clientId.message}</p>
+          <p className="text-xs text-[var(--error)]">
+            {errors.clientId.message}
+          </p>
         )}
       </div>
 
@@ -113,14 +116,10 @@ const SessionForm = ({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
-          <label htmlFor="type" className="text-sm font-medium text-slate-700">
+          <label htmlFor="type" className={labelCls}>
             Session type
           </label>
-          <select
-            id="type"
-            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            {...register("type")}
-          >
+          <select id="type" className={selectCls} {...register("type")}>
             <option value="individual">Individual</option>
             <option value="couples">Couples</option>
             <option value="family">Family</option>
@@ -130,17 +129,10 @@ const SessionForm = ({
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label
-            htmlFor="modality"
-            className="text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="modality" className={labelCls}>
             Modality
           </label>
-          <select
-            id="modality"
-            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            {...register("modality")}
-          >
+          <select id="modality" className={selectCls} {...register("modality")}>
             <option value="video">Video</option>
             <option value="in_person">In-person</option>
             <option value="phone">Phone</option>

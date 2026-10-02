@@ -1,18 +1,27 @@
-﻿import { useEffect, useState, useCallback } from 'react';
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
-import { enIN } from 'date-fns/locale';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { getSessionsAPI } from '../../api/sessions';
-import { useToast } from '../../components/common/Toast';
-import { useNavigate } from 'react-router-dom';
-import Modal from '../../components/common/Modal';
-import SessionForm from '../../components/sessions/SessionForm';
-import Button from '../../components/common/Button';
-import Spinner from '../../components/common/Spinner';
-import Badge, { statusColor } from '../../components/common/Badge';
+﻿import { useEffect, useState, useCallback } from "react";
+import { Calendar, dateFnsLocalizer } from "react-big-calendar";
+import {
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  startOfMonth,
+  endOfMonth,
+  addMonths,
+  subMonths,
+} from "date-fns";
+import { enIN } from "date-fns/locale";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { getSessionsAPI } from "../../api/sessions";
+import { useToast } from "../../components/common/Toast";
+import { useNavigate } from "react-router-dom";
+import Modal from "../../components/common/Modal";
+import SessionForm from "../../components/sessions/SessionForm";
+import Button from "../../components/common/Button";
+import Spinner from "../../components/common/Spinner";
+import Badge, { statusColor } from "../../components/common/Badge";
 
-const locales = { 'en-IN': enIN };
+const locales = { "en-IN": enIN };
 
 const localizer = dateFnsLocalizer({
   format,
@@ -25,49 +34,54 @@ const localizer = dateFnsLocalizer({
 // Status → background colour map
 const eventStyle = (status) => {
   const colors = {
-    scheduled:   { bg: '#6366f1', border: '#4f46e5' },
-    confirmed:   { bg: '#3b82f6', border: '#2563eb' },
-    completed:   { bg: '#10b981', border: '#059669' },
-    cancelled:   { bg: '#ef4444', border: '#dc2626' },
-    no_show:     { bg: '#f59e0b', border: '#d97706' },
-    in_progress: { bg: '#8b5cf6', border: '#7c3aed' },
+    scheduled: { bg: "#4F46E5", border: "#3730A3" },
+    confirmed: { bg: "#2563EB", border: "#1D4ED8" },
+    completed: { bg: "#059669", border: "#047857" },
+    cancelled: { bg: "#DC2626", border: "#B91C1C" },
+    no_show: { bg: "#D97706", border: "#B45309" },
+    in_progress: { bg: "#7C3AED", border: "#6D28D9" },
   };
-  return colors[status] || { bg: '#6366f1', border: '#4f46e5' };
+  return colors[status] || { bg: "#4F46E5", border: "#3730A3" };
 };
 
 const CalendarPage = () => {
-  const [events,      setEvents]      = useState([]);
-  const [loading,     setLoading]     = useState(true);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [showForm,    setShowForm]    = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const toast    = useToast();
+  const toast = useToast();
   const navigate = useNavigate();
 
   const fetchSessions = useCallback(async (date) => {
     setLoading(true);
     try {
       const start = subMonths(startOfMonth(date), 0);
-      const end   = endOfMonth(addMonths(date, 0));
+      const end = endOfMonth(addMonths(date, 0));
       const { data } = await getSessionsAPI({
         startDate: start.toISOString(),
-        endDate:   end.toISOString(),
-        limit:     500,
+        endDate: end.toISOString(),
+        limit: 500,
       });
       const mapped = data.data.map((s) => ({
-        id:       s._id,
-        title:    `${s.client?.firstName || ''} ${s.client?.lastName || ''}`,
-        start:    new Date(s.startTime),
-        end:      new Date(s.endTime),
+        id: s._id,
+        title: `${s.client?.firstName || ""} ${s.client?.lastName || ""}`,
+        start: new Date(s.startTime),
+        end: new Date(s.endTime),
         resource: s,
       }));
       setEvents(mapped);
-    } catch (err) { if (!isSessionExpired(err)) toast.error('Failed to load sessions'); }
-    finally   { setLoading(false); }
+    } catch (err) {
+      if (!isSessionExpired(err)) toast.error("Failed to load sessions");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { fetchSessions(currentDate); }, [currentDate]);
+  useEffect(() => {
+    fetchSessions(currentDate);
+  }, [currentDate]);
 
   const handleNavigate = (date) => setCurrentDate(date);
 
@@ -83,11 +97,11 @@ const CalendarPage = () => {
     return {
       style: {
         backgroundColor: bg,
-        borderColor:     border,
-        borderRadius:    '4px',
-        color:           '#fff',
-        fontSize:        '11px',
-        border:          `1px solid ${border}`,
+        borderColor: border,
+        borderRadius: "4px",
+        color: "#fff",
+        fontSize: "11px",
+        border: `1px solid ${border}`,
       },
     };
   };
@@ -97,16 +111,28 @@ const CalendarPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Calendar</h2>
-          <p className="text-sm text-slate-500">
-            {format(currentDate, 'MMMM yyyy')} · {events.length} sessions
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+            Calendar
+          </h2>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {format(currentDate, "MMMM yyyy")} · {events.length} sessions
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate('/sessions')}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/sessions")}
+          >
             List view
           </Button>
-          <Button size="sm" onClick={() => { setSelectedSlot(new Date()); setShowForm(true); }}>
+          <Button
+            size="sm"
+            onClick={() => {
+              setSelectedSlot(new Date());
+              setShowForm(true);
+            }}
+          >
             + Schedule
           </Button>
         </div>
@@ -115,9 +141,11 @@ const CalendarPage = () => {
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-xs">
         {[
-          ['scheduled', 'Scheduled'], ['confirmed', 'Confirmed'],
-          ['completed', 'Completed'], ['cancelled', 'Cancelled'],
-          ['in_progress', 'In progress'],
+          ["scheduled", "Scheduled"],
+          ["confirmed", "Confirmed"],
+          ["completed", "Completed"],
+          ["cancelled", "Cancelled"],
+          ["in_progress", "In progress"],
         ].map(([status, label]) => (
           <div key={status} className="flex items-center gap-1.5">
             <span
@@ -125,15 +153,15 @@ const CalendarPage = () => {
               style={{ backgroundColor: eventStyle(status).bg }}
               aria-hidden="true"
             />
-            <span className="text-slate-600">{label}</span>
+            <span className="text-[var(--text-secondary)]">{label}</span>
           </div>
         ))}
       </div>
 
       {/* Calendar */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 relative">
+      <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-sm)] p-4 relative">
         {loading && (
-          <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-xl">
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-[var(--radius-xl)]">
             <Spinner size="lg" />
           </div>
         )}
@@ -149,7 +177,7 @@ const CalendarPage = () => {
           selectable
           popup
           eventPropGetter={eventPropGetter}
-          views={['month', 'week', 'day', 'agenda']}
+          views={["month", "week", "day", "agenda"]}
           defaultView="week"
           aria-label="Session calendar"
         />
@@ -158,14 +186,23 @@ const CalendarPage = () => {
       {/* Schedule modal */}
       <Modal
         isOpen={showForm}
-        onClose={() => { setShowForm(false); setSelectedSlot(null); }}
+        onClose={() => {
+          setShowForm(false);
+          setSelectedSlot(null);
+        }}
         title="Schedule session"
         size="md"
       >
         <SessionForm
           defaultStartTime={selectedSlot}
-          onSuccess={() => { setShowForm(false); fetchSessions(currentDate); }}
-          onCancel={() => { setShowForm(false); setSelectedSlot(null); }}
+          onSuccess={() => {
+            setShowForm(false);
+            fetchSessions(currentDate);
+          }}
+          onCancel={() => {
+            setShowForm(false);
+            setSelectedSlot(null);
+          }}
         />
       </Modal>
 
@@ -179,26 +216,57 @@ const CalendarPage = () => {
         >
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-sm">
-                {selectedEvent.client?.firstName?.[0]}{selectedEvent.client?.lastName?.[0]}
+              <div className="w-10 h-10 rounded-full bg-[var(--primary-light)] flex items-center justify-center text-[var(--primary)] font-semibold text-sm">
+                {selectedEvent.client?.firstName?.[0]}
+                {selectedEvent.client?.lastName?.[0]}
               </div>
               <div>
-                <p className="font-semibold text-slate-900">
-                  {selectedEvent.client?.firstName} {selectedEvent.client?.lastName}
+                <p className="font-semibold text-[var(--text-primary)]">
+                  {selectedEvent.client?.firstName}{" "}
+                  {selectedEvent.client?.lastName}
                 </p>
-                <Badge label={selectedEvent.status} color={statusColor(selectedEvent.status)} />
+                <Badge
+                  label={selectedEvent.status}
+                  color={statusColor(selectedEvent.status)}
+                />
               </div>
             </div>
-            <div className="text-sm space-y-1 text-slate-600">
-              <p>📅 {format(new Date(selectedEvent.startTime), 'EEEE, MMM d, yyyy')}</p>
-              <p>🕐 {format(new Date(selectedEvent.startTime), 'h:mm a')} – {format(new Date(selectedEvent.endTime), 'h:mm a')} ({selectedEvent.duration} min)</p>
-              <p>📋 {selectedEvent.type} · {selectedEvent.modality}</p>
-              <p>💰 ₹{selectedEvent.rate?.toLocaleString('en-IN')} · {selectedEvent.paymentStatus}</p>
+            <div className="text-sm space-y-1.5 text-[var(--text-secondary)]">
+              <p>
+                <span className="font-medium text-[var(--text-muted)] text-xs uppercase tracking-wide mr-2">
+                  Date:
+                </span>
+                {format(new Date(selectedEvent.startTime), "EEEE, MMM d, yyyy")}
+              </p>
+              <p>
+                <span className="font-medium text-[var(--text-muted)] text-xs uppercase tracking-wide mr-2">
+                  Time:
+                </span>
+                {format(new Date(selectedEvent.startTime), "h:mm a")} –{" "}
+                {format(new Date(selectedEvent.endTime), "h:mm a")} (
+                {selectedEvent.duration} min)
+              </p>
+              <p>
+                <span className="font-medium text-[var(--text-muted)] text-xs uppercase tracking-wide mr-2">
+                  Type:
+                </span>
+                {selectedEvent.type} · {selectedEvent.modality}
+              </p>
+              <p>
+                <span className="font-medium text-[var(--text-muted)] text-xs uppercase tracking-wide mr-2">
+                  Rate:
+                </span>
+                ₹{selectedEvent.rate?.toLocaleString("en-IN")} ·{" "}
+                {selectedEvent.paymentStatus}
+              </p>
             </div>
             <div className="flex gap-2 pt-2">
               <Button
                 size="sm"
-                onClick={() => { navigate(`/sessions/${selectedEvent._id}`); setSelectedEvent(null); }}
+                onClick={() => {
+                  navigate(`/sessions/${selectedEvent._id}`);
+                  setSelectedEvent(null);
+                }}
               >
                 View details
               </Button>

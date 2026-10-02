@@ -41,11 +41,11 @@ const AppLayout = () => {
     )?.[1] || "Unfazed";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-[var(--bg)]">
       {/* ── Mobile overlay backdrop ─────────────────────────────────────────── */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
         />
@@ -55,7 +55,7 @@ const AppLayout = () => {
       <div
         className={`
           fixed inset-y-0 left-0 z-50 flex-shrink-0 lg:static lg:z-auto
-          transform transition-transform duration-200
+          transform transition-transform duration-300
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0
         `}
@@ -76,7 +76,7 @@ const AppLayout = () => {
           }}
           title={title}
         />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-5 md:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
