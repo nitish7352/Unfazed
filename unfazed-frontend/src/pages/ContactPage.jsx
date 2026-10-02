@@ -6,16 +6,16 @@ const contactMethods = [
     icon: '📧',
     title: 'Email Us',
     desc: 'For general enquiries and support',
-    value: 'support@unfazed.in',
-    link: 'mailto:support@unfazed.in',
+    value: 'nkaky10@gmail.com',
+    link: 'mailto:nkaky10@gmail.com',
     color: 'bg-indigo-50 text-indigo-700 border-indigo-100',
   },
   {
     icon: '📞',
     title: 'Call Us',
     desc: 'Mon–Sat, 9 AM – 7 PM IST',
-    value: '+91 98765 43210',
-    link: 'tel:+919876543210',
+    value: '+91 7352097919',
+    link: 'tel:+917352097919',
     color: 'bg-emerald-50 text-emerald-700 border-emerald-100',
   },
   {
@@ -23,14 +23,14 @@ const contactMethods = [
     title: 'WhatsApp',
     desc: 'Quick support on WhatsApp',
     value: 'Chat with us',
-    link: 'https://wa.me/919876543210',
+    link: 'https://wa.me/917352097919',
     color: 'bg-green-50 text-green-700 border-green-100',
   },
   {
     icon: '📍',
     title: 'Office',
     desc: 'Headquarters',
-    value: 'Kanpur, Uttar Pradesh, India',
+    value: 'Chhapra, Bihar, India',
     link: null,
     color: 'bg-purple-50 text-purple-700 border-purple-100',
   },
@@ -80,7 +80,7 @@ const ContactPage = () => {
       "",
       form.message,
     ].join("\n");
-    window.location.href = `mailto:support@unfazed.in?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:nkaky10@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setSubmitted(true);
   };
 
@@ -164,7 +164,7 @@ const ContactPage = () => {
                   <div className="text-5xl mb-4">✅</div>
                   <h3 className="text-lg font-bold text-emerald-800 mb-2">Your email draft is ready</h3>
                   <p className="text-emerald-700 text-sm mb-4">
-                    Your email app should open with the message addressed to support@unfazed.in. Send it from your email app to reach us.
+                    Your email app should open with the message addressed to nkaky10@gmail.com. Send it from your email app to reach us.
                   </p>
                   <button
                     onClick={() => { setSubmitted(false); setForm({ name: '', email: '', subject: '', message: '' }); }}
@@ -262,13 +262,13 @@ const ContactPage = () => {
       <section className="py-12 bg-white">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-3">Find us</h2>
-          <p className="text-slate-500 mb-6">We're based in Kanpur, Uttar Pradesh — but we serve therapists and clients all across India.</p>
+          <p className="text-slate-500 mb-6">We're based in Chhapra, Bihar — but we serve therapists and clients all across India.</p>
           <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-10 flex flex-col items-center gap-3">
             <span className="text-5xl">📍</span>
             <p className="font-bold text-slate-900 text-lg">Unfazed HQ</p>
-            <p className="text-slate-500">Kanpur, Uttar Pradesh – 208001, India</p>
+            <p className="text-slate-500">Chhapra, Bihar – 841224, India</p>
             <a
-              href="https://maps.google.com/?q=Kanpur,Uttar+Pradesh,India"
+              href="https://maps.google.com/?q=Chhapra,Bihar,India"
               target="_blank" rel="noopener noreferrer"
               className="mt-2 px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors"
             >
