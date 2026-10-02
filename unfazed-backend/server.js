@@ -16,10 +16,25 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, cb) => cb(null, true), // allow all — CORS handled by app.js
     methods: ['GET', 'POST'],
     credentials: true,
   },
+});
+
+// ── Main namespace: user notification rooms ──────────────────────────────────
+// Clients emit  { event: 'join_user', userId }  to subscribe to their personal
+// notification room ("user:<id>"). The notificationService emits to this room.
+io.on('connection', (socket) => {
+  socket.on('join_user', (userId) => {
+    if (userId) {
+      socket.join(`user:${userId}`);
+      console.log(`[Socket] user ${userId} joined room user:${userId}`);
+    }
+  });
+  socket.on('leave_user', (userId) => {
+    if (userId) socket.leave(`user:${userId}`);
+  });
 });
 
 setupVideoSocket(io);

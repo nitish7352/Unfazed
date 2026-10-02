@@ -1,10 +1,11 @@
-const Session = require('../models/Session');
-const Client = require('../models/Client');
+const Session          = require('../models/Session');
+const Client           = require('../models/Client');
+const User             = require('../models/User');
 const TherapistProfile = require('../models/TherapistProfile');
-const asyncHandler = require('../utils/asyncHandler');
+const asyncHandler     = require('../utils/asyncHandler');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/apiResponse');
-const { v4: uuidv4 } = require('crypto').randomUUID ? require('crypto') : { randomUUID: () => Math.random().toString(36).slice(2) };
-const crypto = require('crypto');
+const { fireEvent }    = require('../services/notificationService');
+const crypto           = require('crypto');
 
 // @desc    Get all sessions for therapist
 // @route   GET /api/sessions
@@ -14,9 +15,8 @@ const getSessions = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
 
   const query = { therapist: req.user._id };
-
-  if (status)   query.status = status;
-  if (clientId) query.client = clientId;
+  if (status)   query.status   = status;
+  if (clientId) query.client   = clientId;
   if (startDate || endDate) {
     query.startTime = {};
     if (startDate) query.startTime.$gte = new Date(startDate);
@@ -35,17 +35,17 @@ const getSessions = asyncHandler(async (req, res) => {
   return paginatedResponse(res, sessions, total, page, limit);
 });
 
-// @desc    Get upcoming sessions (next 7 days dashboard)
+// @desc    Get upcoming sessions (next 7 days)
 // @route   GET /api/sessions/upcoming
 // @access  Private
 const getUpcomingSessions = asyncHandler(async (req, res) => {
-  const now = new Date();
+  const now      = new Date();
   const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   const sessions = await Session.find({
     therapist: req.user._id,
     startTime: { $gte: now, $lte: nextWeek },
-    status: { $in: ['scheduled', 'confirmed'] },
+    status:    { $in: ['scheduled', 'confirmed'] },
   })
     .populate('client', 'firstName lastName email avatar')
     .sort({ startTime: 1 })
@@ -72,11 +72,10 @@ const getSession = asyncHandler(async (req, res) => {
 const createSession = asyncHandler(async (req, res) => {
   const { clientId, startTime, duration, type, modality, rate } = req.body;
 
-  // Verify client belongs to therapist
   const client = await Client.findOne({ _id: clientId, therapist: req.user._id });
   if (!client) return errorResponse(res, 'Client not found', 404);
 
-  // Get rate from client or profile default
+  // Resolve session rate
   let sessionRate = rate;
   if (!sessionRate) {
     if (client.sessionRate) {
@@ -88,8 +87,8 @@ const createSession = asyncHandler(async (req, res) => {
   }
 
   const sessionDuration = duration || client.sessionDuration || 50;
-  const start = new Date(startTime);
-  const end   = new Date(start.getTime() + sessionDuration * 60 * 1000);
+  const start  = new Date(startTime);
+  const end    = new Date(start.getTime() + sessionDuration * 60 * 1000);
   const roomId = crypto.randomBytes(8).toString('hex');
 
   const session = await Session.create({
@@ -98,7 +97,7 @@ const createSession = asyncHandler(async (req, res) => {
     startTime: start,
     endTime:   end,
     duration:  sessionDuration,
-    type:      type || 'individual',
+    type:      type     || 'individual',
     modality:  modality || 'video',
     rate:      sessionRate,
     roomId,
@@ -107,6 +106,16 @@ const createSession = asyncHandler(async (req, res) => {
   });
 
   await session.populate('client', 'firstName lastName email avatar');
+
+  // ── Fire booking_confirmed notification ──────────────────────────────────
+  const therapist = await User.findById(req.user._id).select('firstName lastName email');
+  const io        = req.app.get('io');
+  fireEvent('booking_confirmed', {
+    therapist,
+    client:  session.client,
+    session,
+    io,
+  }).catch(() => {}); // non-fatal
 
   return successResponse(res, { session }, 'Session scheduled', 201);
 });
@@ -123,7 +132,6 @@ const updateSession = asyncHandler(async (req, res) => {
   const updates = {};
   allowedFields.forEach((f) => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 
-  // Recalculate endTime if startTime or duration changes
   if (updates.startTime && updates.duration) {
     updates.endTime = new Date(new Date(updates.startTime).getTime() + updates.duration * 60 * 1000);
   }
@@ -147,15 +155,26 @@ const cancelSession = asyncHandler(async (req, res) => {
   const session = await Session.findOneAndUpdate(
     { _id: req.params.id, therapist: req.user._id },
     {
-      status: 'cancelled',
+      status:             'cancelled',
       cancelledBy,
       cancellationReason: reason || '',
-      cancelledAt: new Date(),
+      cancelledAt:        new Date(),
     },
     { new: true }
   ).populate('client', 'firstName lastName email avatar');
 
   if (!session) return errorResponse(res, 'Session not found', 404);
+
+  // ── Fire session_cancelled notification ──────────────────────────────────
+  const therapist = await User.findById(req.user._id).select('firstName lastName email');
+  const io        = req.app.get('io');
+  fireEvent('session_cancelled', {
+    therapist,
+    client:  session.client,
+    session,
+    io,
+  }).catch(() => {}); // non-fatal
+
   return successResponse(res, { session }, 'Session cancelled');
 });
 
@@ -167,7 +186,7 @@ const completeSession = asyncHandler(async (req, res) => {
     { _id: req.params.id, therapist: req.user._id },
     { status: 'completed' },
     { new: true }
-  );
+  ).populate('client', 'firstName lastName email avatar');
 
   if (!session) return errorResponse(res, 'Session not found', 404);
 
