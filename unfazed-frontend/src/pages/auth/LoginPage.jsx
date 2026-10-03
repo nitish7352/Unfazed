@@ -25,7 +25,9 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login(email, password);
-      navigate("/dashboard");
+      const params = new URLSearchParams(location.search);
+      const redirectUrl = location.state?.redirect || params.get("redirect") || "/dashboard";
+      navigate(redirectUrl);
     } catch (err) {
       toast.error(
         err.response?.data?.message || "Login failed. Please try again.",
@@ -144,7 +146,8 @@ const LoginPage = () => {
           <p className="text-center text-sm text-[var(--text-secondary)] mt-6">
             Don&apos;t have an account?{" "}
             <Link
-              to="/register"
+              to={{ pathname: "/register", search: location.search }}
+              state={location.state}
               className="text-[var(--primary)] font-medium hover:underline"
             >
               Create one free

@@ -18,6 +18,7 @@ const intakeFormSchema = new mongoose.Schema({
 const clientSchema = new mongoose.Schema(
   {
     therapist: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    user:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 
     // Basic info
     firstName:   { type: String, required: true, trim: true },
@@ -81,6 +82,7 @@ clientSchema.virtual('fullName').get(function () {
 // Index for therapist queries
 clientSchema.index({ therapist: 1, status: 1 });
 clientSchema.index({ therapist: 1, email: 1 });
+clientSchema.index({ therapist: 1, user: 1 });
 
 clientSchema.set('toJSON', { virtuals: true });
 clientSchema.set('toObject', { virtuals: true });

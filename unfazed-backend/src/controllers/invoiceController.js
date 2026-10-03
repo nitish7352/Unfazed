@@ -1,6 +1,7 @@
-﻿const Invoice = require('../models/Invoice');
+const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
 const Session = require('../models/Session');
+const Booking = require('../models/Booking');
 const asyncHandler = require('../utils/asyncHandler');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/apiResponse');
 const Razorpay = require('razorpay');
@@ -46,9 +47,15 @@ const getInvoices = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, status, clientId, startDate, endDate } = req.query;
   const skip = (page - 1) * limit;
 
-  const query = { therapist: req.user._id };
-  if (status)   query.status = status;
-  if (clientId) query.client = clientId;
+  let query;
+  if (req.user.role === 'client') {
+    query = { clientUser: req.user._id };
+  } else {
+    query = { therapist: req.user._id };
+    if (clientId) query.client = clientId;
+  }
+
+  if (status) query.status = status;
   if (startDate || endDate) {
     query.createdAt = {};
     if (startDate) query.createdAt.$gte = new Date(startDate);
@@ -57,8 +64,10 @@ const getInvoices = asyncHandler(async (req, res) => {
 
   const [invoices, total] = await Promise.all([
     Invoice.find(query)
-      .populate('client', 'firstName lastName email')
+      .populate('client', 'firstName lastName email phone')
+      .populate('therapist', 'firstName lastName email avatar')
       .populate('session', 'startTime type modality')
+      .populate('booking', 'sessionType mode startTime endTime status')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit)),
@@ -72,11 +81,23 @@ const getInvoices = asyncHandler(async (req, res) => {
 // @route   GET /api/invoices/:id
 // @access  Private
 const getInvoice = asyncHandler(async (req, res) => {
-  const invoice = await Invoice.findOne({ _id: req.params.id, therapist: req.user._id })
+  const invoice = await Invoice.findById(req.params.id)
     .populate('client', 'firstName lastName email phone address')
-    .populate('session', 'startTime type modality duration');
+    .populate('therapist', 'firstName lastName email avatar phone')
+    .populate('session', 'startTime type modality duration')
+    .populate('booking');
 
   if (!invoice) return errorResponse(res, 'Invoice not found', 404);
+
+  const isTherapist = invoice.therapist?._id?.toString() === req.user._id.toString();
+  const isClient = invoice.clientUser?.toString() === req.user._id.toString() ||
+                   invoice.client?.user?.toString() === req.user._id.toString();
+  const isAdmin = req.user.role === 'admin';
+
+  if (!isTherapist && !isClient && !isAdmin) {
+    return errorResponse(res, 'Not authorized to view this invoice', 403);
+  }
+
   return successResponse(res, { invoice });
 });
 
@@ -141,8 +162,15 @@ const updateInvoice = asyncHandler(async (req, res) => {
 // @route   POST /api/invoices/:id/order
 // @access  Private
 const createRazorpayOrder = asyncHandler(async (req, res) => {
-  const invoice = await Invoice.findOne({ _id: req.params.id, therapist: req.user._id });
+  const invoice = await Invoice.findById(req.params.id);
   if (!invoice) return errorResponse(res, 'Invoice not found', 404);
+
+  const isTherapist = invoice.therapist?.toString() === req.user._id.toString();
+  const isClient = invoice.clientUser?.toString() === req.user._id.toString();
+  if (!isTherapist && !isClient && req.user.role !== 'admin') {
+    return errorResponse(res, 'Not authorized', 403);
+  }
+
   if (invoice.status === 'paid') return errorResponse(res, 'Invoice already paid', 400);
 
   const razorpay = getRazorpay();
@@ -150,7 +178,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     amount:   Math.round(invoice.total * 100), // paise
     currency: invoice.currency || 'INR',
     receipt:  invoice.invoiceNumber,
-    notes:    { invoiceId: invoice._id.toString(), therapistId: req.user._id.toString() },
+    notes:    { invoiceId: invoice._id.toString(), therapistId: invoice.therapist.toString() },
   });
 
   invoice.razorpayOrderId = order.id;
@@ -171,8 +199,14 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
 const verifyPayment = asyncHandler(async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-  const invoice = await Invoice.findOne({ _id: req.params.id, therapist: req.user._id });
+  const invoice = await Invoice.findById(req.params.id);
   if (!invoice) return errorResponse(res, 'Invoice not found', 404);
+
+  const isTherapist = invoice.therapist?.toString() === req.user._id.toString();
+  const isClient = invoice.clientUser?.toString() === req.user._id.toString();
+  if (!isTherapist && !isClient && req.user.role !== 'admin') {
+    return errorResponse(res, 'Not authorized', 403);
+  }
 
   const expectedSignature = crypto
     .createHmac('sha256', RZP_KEY_SECRET)
@@ -192,6 +226,15 @@ const verifyPayment = asyncHandler(async (req, res) => {
   // Update session payment status
   if (invoice.session) {
     await Session.findByIdAndUpdate(invoice.session, { paymentStatus: 'paid' });
+  }
+
+  // Update booking payment status
+  if (invoice.booking) {
+    await Booking.findByIdAndUpdate(invoice.booking, {
+      paymentStatus: 'paid',
+      status: 'confirmed',
+      razorpayPaymentId: razorpay_payment_id,
+    });
   }
 
   // Update client total paid
@@ -217,4 +260,5 @@ const deleteInvoice = asyncHandler(async (req, res) => {
 module.exports = {
   getInvoices, getInvoice, createInvoice, updateInvoice,
   createRazorpayOrder, verifyPayment, deleteInvoice,
+  generateInvoiceNumber, getRazorpay, RZP_KEY_ID, RZP_KEY_SECRET,
 };

@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ToastProvider } from "./components/common/Toast";
@@ -8,6 +8,8 @@ import AppLayout from "./components/layout/AppLayout";
 
 // Public pages
 import LandingPage from "./pages/LandingPage";
+import TherapistDirectoryPage from "./pages/TherapistDirectoryPage";
+import TherapistProfilePage from "./pages/TherapistProfilePage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -41,6 +43,8 @@ function App() {
               <Routes>
                 {/* ── Public routes ── */}
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/therapists" element={<TherapistDirectoryPage />} />
+                <Route path="/therapists/:therapistId" element={<TherapistProfilePage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route

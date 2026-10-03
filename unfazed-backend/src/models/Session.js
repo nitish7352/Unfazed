@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 
 const sessionSchema = new mongoose.Schema(
   {
-    therapist: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    client:    { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
+    therapist:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    client:     { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
+    clientUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    booking:    { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
 
     // Scheduling
     startTime:  { type: Date, required: true },
@@ -60,6 +62,7 @@ const sessionSchema = new mongoose.Schema(
 
 sessionSchema.index({ therapist: 1, startTime: 1 });
 sessionSchema.index({ client: 1, startTime: 1 });
+sessionSchema.index({ clientUser: 1, startTime: 1 });
 sessionSchema.index({ therapist: 1, status: 1 });
 
 module.exports = mongoose.model('Session', sessionSchema);

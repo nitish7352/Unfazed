@@ -1,4 +1,4 @@
-﻿// Load .env only in development — Render injects env vars directly
+// Load .env only in development — Render injects env vars directly
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
@@ -25,6 +25,8 @@ const paymentRoutes      = require('./src/routes/paymentRoutes');
 const schedulingRoutes   = require('./src/routes/schedulingRoutes');
 const entitlementRoutes  = require('./src/routes/entitlementRoutes');
 const chatRoutes         = require('./src/routes/chatRoutes');
+const therapistRoutes    = require('./src/routes/therapistRoutes');
+const bookingRoutes      = require('./src/routes/bookingRoutes');
 
 // Error handler
 const errorHandler = require('./src/middleware/errorHandler');
@@ -161,6 +163,8 @@ app.use('/api/payments',      paymentRoutes);
 app.use('/api/scheduling',    schedulingRoutes);
 app.use('/api/entitlements',  entitlementRoutes);
 app.use('/api/chat',          chatRoutes);
+app.use('/api/therapists',    therapistRoutes);
+app.use('/api/bookings',      bookingRoutes);
 
 // â”€â”€ 404 handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use((req, res) => {

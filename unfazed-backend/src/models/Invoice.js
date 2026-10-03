@@ -11,7 +11,9 @@ const invoiceSchema = new mongoose.Schema(
   {
     therapist:     { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     client:        { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
+    clientUser:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     session:       { type: mongoose.Schema.Types.ObjectId, ref: 'Session', default: null },
+    booking:       { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
 
     invoiceNumber: { type: String, required: true, unique: true },
 
@@ -44,5 +46,6 @@ const invoiceSchema = new mongoose.Schema(
 
 invoiceSchema.index({ therapist: 1, status: 1 });
 invoiceSchema.index({ therapist: 1, createdAt: -1 });
+invoiceSchema.index({ clientUser: 1, status: 1 });
 
 module.exports = mongoose.model('Invoice', invoiceSchema);

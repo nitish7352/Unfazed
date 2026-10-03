@@ -8,6 +8,7 @@ const notificationSchema = new mongoose.Schema(
       enum: [
         'session_reminder', 'session_confirmed', 'session_cancelled',
         'invoice_paid', 'invoice_overdue', 'new_client',
+        'new_booking', 'booking_confirmed', 'booking_rejected',
         'note_reminder', 'subscription_expiry', 'general'
       ],
       required: true,
@@ -22,6 +23,7 @@ const notificationSchema = new mongoose.Schema(
     relatedSession: { type: mongoose.Schema.Types.ObjectId, ref: 'Session', default: null },
     relatedClient:  { type: mongoose.Schema.Types.ObjectId, ref: 'Client', default: null },
     relatedInvoice: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice', default: null },
+    relatedBooking: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
   },
   { timestamps: true }
 );

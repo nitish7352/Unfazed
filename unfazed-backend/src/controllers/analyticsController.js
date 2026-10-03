@@ -1,16 +1,19 @@
 const Session  = require('../models/Session');
 const Client   = require('../models/Client');
 const Invoice  = require('../models/Invoice');
+const Booking  = require('../models/Booking');
 const asyncHandler = require('../utils/asyncHandler');
 const { successResponse } = require('../utils/apiResponse');
 const { canAccess } = require('../services/entitlementService');
 
-// @desc    Dashboard summary stats (includes no-show rate)
+// @desc    Dashboard summary stats (includes no-show rate and booking stats)
 // @route   GET /api/analytics/summary
 // @access  Private
 const getSummary = asyncHandler(async (req, res) => {
   const therapistId  = req.user._id;
   const now          = new Date();
+  const startOfDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const endOfDay     = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfWeek  = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay());
@@ -19,15 +22,22 @@ const getSummary = asyncHandler(async (req, res) => {
     totalClients, activeClients,
     sessionsThisMonth, sessionsThisWeek,
     upcomingSessions,
+    todayAppointments,
+    pendingBookings,
     noShowSessions, completedSessions,
     revenueThisMonth, totalRevenue,
     pendingInvoices,
+    recentBookings,
+    recentClients,
+    recentInvoices,
   ] = await Promise.all([
     Client.countDocuments({ therapist: therapistId }),
     Client.countDocuments({ therapist: therapistId, status: 'active' }),
     Session.countDocuments({ therapist: therapistId, startTime: { $gte: startOfMonth }, status: { $in: ['completed', 'in_progress'] } }),
     Session.countDocuments({ therapist: therapistId, startTime: { $gte: startOfWeek },  status: { $in: ['completed', 'in_progress'] } }),
     Session.countDocuments({ therapist: therapistId, startTime: { $gte: now },          status: { $in: ['scheduled', 'confirmed'] } }),
+    Session.countDocuments({ therapist: therapistId, startTime: { $gte: startOfDay, $lte: endOfDay }, status: { $nin: ['cancelled', 'no_show'] } }),
+    Booking.countDocuments({ therapist: therapistId, status: 'pending' }),
     // No-show rate — last 30 days
     Session.countDocuments({ therapist: therapistId, startTime: { $gte: startOfMonth }, status: 'no_show' }),
     Session.countDocuments({ therapist: therapistId, startTime: { $gte: startOfMonth }, status: { $in: ['completed', 'no_show'] } }),
@@ -40,6 +50,21 @@ const getSummary = asyncHandler(async (req, res) => {
       { $group: { _id: null, total: { $sum: '$total' } } },
     ]),
     Invoice.countDocuments({ therapist: therapistId, status: { $in: ['sent', 'overdue'] } }),
+    Booking.find({ therapist: therapistId })
+      .populate('client', 'firstName lastName email avatar phone')
+      .populate('clientUser', 'firstName lastName email avatar phone')
+      .populate('invoice', 'invoiceNumber total status')
+      .populate('session', 'startTime endTime modality status')
+      .sort({ createdAt: -1 })
+      .limit(6),
+    Client.find({ therapist: therapistId })
+      .populate('user', 'firstName lastName email avatar phone')
+      .sort({ createdAt: -1 })
+      .limit(6),
+    Invoice.find({ therapist: therapistId })
+      .populate('client', 'firstName lastName email')
+      .sort({ createdAt: -1 })
+      .limit(6),
   ]);
 
   // No-show rate as percentage (0–100), null if no data
@@ -50,14 +75,20 @@ const getSummary = asyncHandler(async (req, res) => {
   return successResponse(res, {
     totalClients,
     activeClients,
+    todayAppointments,
     sessionsThisMonth,
     sessionsThisWeek,
     upcomingSessions,
+    pendingBookings,
+    pendingPayments: pendingInvoices,
     noShowSessions,
-    noShowRate,        // new — Module 7
+    noShowRate,
     revenueThisMonth:  revenueThisMonth[0]?.total || 0,
     totalRevenue:      totalRevenue[0]?.total || 0,
     pendingInvoices,
+    recentBookings,
+    recentClients,
+    recentInvoices,
   });
 });
 

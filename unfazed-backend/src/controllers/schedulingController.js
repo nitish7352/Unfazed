@@ -1,5 +1,6 @@
 const Availability = require("../models/Availability");
 const Session      = require("../models/Session");
+const Booking      = require("../models/Booking");
 const asyncHandler = require("../utils/asyncHandler");
 const { successResponse, errorResponse } = require("../utils/apiResponse");
 const { addMinutes, format, parseISO, startOfDay, endOfDay, isAfter, isBefore } = require("date-fns");
@@ -38,11 +39,19 @@ exports.getAvailableSlots = asyncHandler(async (req, res) => {
   // Get booked sessions for this day
   const dayStart = startOfDay(d);
   const dayEnd   = endOfDay(d);
-  const booked   = await Session.find({
-    therapist: therapistId,
-    startTime: { $gte: dayStart, $lte: dayEnd },
-    status:    { $nin: ["cancelled", "no_show"] },
-  }).select("startTime endTime");
+  const [bookedSessions, bookedBookings] = await Promise.all([
+    Session.find({
+      therapist: therapistId,
+      startTime: { $gte: dayStart, $lte: dayEnd },
+      status:    { $nin: ["cancelled", "no_show"] },
+    }).select("startTime endTime"),
+    Booking.find({
+      therapist: therapistId,
+      startTime: { $gte: dayStart, $lte: dayEnd },
+      status:    { $nin: ["cancelled", "rejected"] },
+    }).select("startTime endTime"),
+  ]);
+  const booked = [...bookedSessions, ...bookedBookings];
 
   const slots = [];
   for (const slot of dayConfig.slots) {

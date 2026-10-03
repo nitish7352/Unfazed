@@ -1,5 +1,8 @@
 const Client = require('../models/Client');
 const Session = require('../models/Session');
+const Booking = require('../models/Booking');
+const Invoice = require('../models/Invoice');
+const ClientProfile = require('../models/ClientProfile');
 const asyncHandler = require('../utils/asyncHandler');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/apiResponse');
 
@@ -24,20 +27,68 @@ const getClients = asyncHandler(async (req, res) => {
   }
 
   const [clients, total] = await Promise.all([
-    Client.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
+    Client.find(query).populate('user', 'firstName lastName email avatar phone createdAt').sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
     Client.countDocuments(query),
   ]);
 
   return paginatedResponse(res, clients, total, page, limit);
 });
 
-// @desc    Get single client
+// @desc    Get single client with full profile and booking history
 // @route   GET /api/clients/:id
 // @access  Private
 const getClient = asyncHandler(async (req, res) => {
-  const client = await Client.findOne({ _id: req.params.id, therapist: req.user._id });
+  const client = await Client.findById(req.params.id)
+    .populate('user', 'firstName lastName email avatar phone createdAt')
+    .populate('therapist', 'firstName lastName email avatar phone');
+
   if (!client) return errorResponse(res, 'Client not found', 404);
-  return successResponse(res, { client });
+
+  // Security: only authorized therapist, client themselves, or admin
+  const isTherapist = client.therapist?._id?.toString() === req.user._id.toString() || client.therapist?.toString() === req.user._id.toString();
+  const isClient = (client.user && client.user._id?.toString() === req.user._id.toString()) ||
+                   (client.user && client.user.toString() === req.user._id.toString()) ||
+                   client.email === req.user.email;
+  const isAdmin = req.user.role === 'admin';
+
+  if (!isTherapist && !isClient && !isAdmin) {
+    return errorResponse(res, 'Not authorized to view this client profile', 403);
+  }
+
+  let clientProfile = null;
+  if (client.user) {
+    clientProfile = await ClientProfile.findOne({ user: client.user._id || client.user });
+  }
+
+  const [appointments, sessions, invoices] = await Promise.all([
+    Booking.find({ client: client._id }).sort({ startTime: -1 }).limit(20),
+    Session.find({ client: client._id }).sort({ startTime: -1 }).limit(20),
+    Invoice.find({ client: client._id }).sort({ createdAt: -1 }).limit(20),
+  ]);
+
+  return successResponse(res, {
+    client,
+    clientProfile,
+    appointments,
+    sessions,
+    invoices,
+  });
+});
+
+// @desc    Get logged in client's own profile and associated therapist records
+// @route   GET /api/clients/my
+// @access  Private (client)
+const getMyClient = asyncHandler(async (req, res) => {
+  const clientProfile = await ClientProfile.findOne({ user: req.user._id });
+  const clientRecords = await Client.find({
+    $or: [{ user: req.user._id }, { email: req.user.email }],
+  }).populate('therapist', 'firstName lastName email avatar phone');
+
+  return successResponse(res, {
+    user: req.user,
+    clientProfile,
+    clientRecords,
+  });
 });
 
 // @desc    Create client
@@ -109,6 +160,7 @@ const getClientSessions = asyncHandler(async (req, res) => {
 module.exports = {
   getClients,
   getClient,
+  getMyClient,
   createClient,
   updateClient,
   deleteClient,

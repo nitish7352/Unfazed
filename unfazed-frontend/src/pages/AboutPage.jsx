@@ -2,14 +2,14 @@ import { Link } from 'react-router-dom';
 
 const team = [
   {
-    name: 'Aman Agarwal',
+    name: 'Nitish Kumar',
     role: 'Co-Founder & CEO',
     bio: 'Entrepreneurship and finance enthusiast. Founded Unfazed in 2023 after witnessing the mental health challenges of friends and family. Passionate about making therapy accessible to every Indian.',
     initials: 'AA',
     color: 'bg-indigo-100 text-indigo-700',
   },
   {
-    name: 'Jasneet Kaur',
+    name: 'Wajid',
     role: 'Co-Founder & COO',
     bio: 'Co-founded Unfazed in May 2023. Drives operations and therapist partnerships. Committed to building a platform where every person feels safe seeking help.',
     initials: 'JK',

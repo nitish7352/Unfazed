@@ -5,12 +5,20 @@ const therapistProfileSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
 
     // Professional info
+    title:            { type: String, default: 'Licensed Clinical Psychologist' },
+    qualification:    { type: String, default: 'M.Phil Clinical Psychology' },
     licenseNumber:    { type: String, default: null },
     licenseType:      { type: String, default: null }, // e.g. LPC, LCSW, PhD
     yearsExperience:  { type: Number, default: 0 },
     specializations:  [{ type: String }],
     languages:        [{ type: String, default: 'English' }],
     bio:              { type: String, maxlength: 2000, default: '' },
+    isPublic:         { type: Boolean, default: true },
+    isApproved:       { type: Boolean, default: true },
+    sessionTypes:     [{ type: String }],
+    modes:            [{ type: String, enum: ['online', 'video', 'in_person', 'audio', 'phone'] }],
+    rating:           { type: Number, default: 5.0 },
+    reviewCount:      { type: Number, default: 0 },
 
     // Practice info
     practiceName:     { type: String, default: null },

@@ -1,32 +1,64 @@
 const User = require('../models/User');
 const TherapistProfile = require('../models/TherapistProfile');
+const ClientProfile = require('../models/ClientProfile');
+const Availability = require('../models/Availability');
 const generateToken = require('../utils/generateToken');
 const asyncHandler = require('../utils/asyncHandler');
 const { successResponse, errorResponse } = require('../utils/apiResponse');
 
-// @desc    Register a new therapist
+// @desc    Register a new user (therapist or client)
 // @route   POST /api/auth/register
 // @access  Public
 const register = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, role = 'therapist', phone } = req.body;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     return errorResponse(res, 'Email already registered', 400);
   }
 
-  const user = await User.create({ firstName, lastName, email, password, role: 'therapist' });
-
-  // Create default therapist profile
-  await TherapistProfile.create({
-    user: user._id,
-    workingHours: [0, 1, 2, 3, 4, 5, 6].map((day) => ({
-      day,
-      enabled: day >= 1 && day <= 5, // Mon-Fri enabled by default
-      start: '09:00',
-      end: '17:00',
-    })),
+  const assignedRole = role === 'client' ? 'client' : 'therapist';
+  const user = await User.create({
+    firstName,
+    lastName,
+    email,
+    password,
+    role: assignedRole,
+    phone: phone || null,
   });
+
+  if (assignedRole === 'therapist') {
+    // Create default therapist profile
+    await TherapistProfile.create({
+      user: user._id,
+      defaultSessionRate: 1200,
+      sessionTypes: ['individual', 'couples'],
+      modes: ['online', 'in_person'],
+      specializations: ['Anxiety', 'Stress Management', 'CBT'],
+      workingHours: [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+        day,
+        enabled: day >= 1 && day <= 5, // Mon-Fri enabled by default
+        start: '09:00',
+        end: '17:00',
+      })),
+    });
+
+    // Create default availability for immediate booking
+    await Availability.create({
+      therapist: user._id,
+      weekly: [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+        day,
+        enabled: day >= 1 && day <= 5,
+        slots: day >= 1 && day <= 5 ? [{ start: '09:00', end: '17:00' }] : [],
+      })),
+    });
+  } else {
+    // Create client profile
+    await ClientProfile.create({
+      user: user._id,
+      phone: phone || null,
+    });
+  }
 
   const token = generateToken(user._id, user.role);
 
@@ -39,6 +71,7 @@ const register = asyncHandler(async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         avatar: user.avatar,
         subscription: user.subscription,
@@ -79,6 +112,7 @@ const login = asyncHandler(async (req, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      phone: user.phone,
       role: user.role,
       avatar: user.avatar,
       subscription: user.subscription,

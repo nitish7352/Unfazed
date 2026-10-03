@@ -1,58 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
-const therapists = [
-  {
-    name: "Dr. Pankaja",
-    title: "Head, Mental Wellness Centre · Gurgaon",
-    exp: "15+ years · ~1,00,000 sessions",
-    specialties: ["CBT", "Trauma Recovery", "Life Coaching"],
-    bio: "Widely recognised as a leading psychologist. Specialises in Cognitive Behavioral Therapy and evidence-based approaches to mental wellness.",
-    initials: "PK",
-    color: "from-violet-500 to-purple-600",
-    badge: "Top Rated",
-  },
-  {
-    name: "Dr. (Prof) R. K. Suri",
-    title: "Mentor Director, TalktoAngel · Delhi/NCR",
-    exp: "40+ years clinical experience",
-    specialties: ["Executive Coaching", "Clinical Psychology", "Complex Cases"],
-    bio: "Formally ranked as a top clinical psychologist, specialising in advanced therapeutic interventions and executive coaching.",
-    initials: "RS",
-    color: "from-blue-500 to-indigo-600",
-    badge: "Expert",
-  },
-  {
-    name: "Dr. Shraboni Nandi",
-    title: "Senior Psychologist · Delhi & Gurgaon",
-    exp: "20+ years · RCI Licensed · PhD",
-    specialties: ["CBT", "Relationship Counseling", "Child Psychology"],
-    bio: "Recognised expert in CBT and trauma recovery. Known for personalised mental wellness support and long-term emotional healing.",
-    initials: "SN",
-    color: "from-emerald-500 to-teal-600",
-    badge: "PhD",
-  },
-  {
-    name: "Ms. Gunjan Bhatia",
-    title: "Child & Adult Psychologist · Delhi",
-    exp: "5+ years",
-    specialties: ["Child Psychology", "ADHD", "Behavioral Therapy"],
-    bio: "Certified child and adult psychologist, highly trusted for parenting guidance and compassionate anxiety management.",
-    initials: "GB",
-    color: "from-amber-500 to-orange-500",
-    badge: "Certified",
-  },
-  {
-    name: "Mrs. Ritika Dhall",
-    title: "Counseling Psychologist · Online",
-    exp: "Seasoned practitioner",
-    specialties: ["Anxiety & Depression", "Couples Therapy", "PTSD"],
-    bio: "Specialises in anxiety, couples therapy, and PTSD using CBT, mindfulness, and ACT frameworks.",
-    initials: "RD",
-    color: "from-rose-500 to-pink-600",
-    badge: "ACT",
-  },
-];
+import { getTherapistsAPI } from "../api/therapists";
+import TherapistCard from "../components/therapist/TherapistCard";
+import BookingModal from "../components/booking/BookingModal";
+import Spinner from "../components/common/Spinner";
 
 const features = [
   {
@@ -110,6 +61,30 @@ const Stars = () => (
 
 const LandingPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [therapistsList, setTherapistsList] = useState([]);
+  const [loadingTherapists, setLoadingTherapists] = useState(true);
+  const [selectedTherapistForBooking, setSelectedTherapistForBooking] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSpec, setSelectedSpec] = useState('');
+
+  useEffect(() => {
+    const loadTherapists = async () => {
+      setLoadingTherapists(true);
+      try {
+        const { data } = await getTherapistsAPI({
+          search: searchQuery || undefined,
+          specialization: selectedSpec || undefined,
+        });
+        setTherapistsList(data.data.therapists || []);
+      } catch (err) {
+        console.error('Failed to load therapists', err);
+        setTherapistsList([]);
+      } finally {
+        setLoadingTherapists(false);
+      }
+    };
+    loadTherapists();
+  }, [searchQuery, selectedSpec]);
 
   return (
     <div
@@ -329,95 +304,89 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* ── Therapists ── */}
+      {/* ── Therapists: "Find the right therapist for you" ── */}
       <section id="therapists" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="max-w-xl mx-auto text-center mb-12">
+          <div className="max-w-2xl mx-auto text-center mb-10">
             <span className="inline-block px-3 py-1 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold rounded-full mb-4">
-              ✓ Verified & RCI-licensed
+              ✓ Verified & RCI-licensed Therapists
             </span>
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">
-              Meet our expert therapists
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">
+              Find the right therapist for you
             </h2>
-            <p className="text-slate-500">
-              Handpicked professionals with proven track records in mental
-              health care.
+            <p className="text-slate-500 text-sm sm:text-base leading-relaxed">
+              Connect with qualified therapists and book a session that fits your schedule.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {therapists.map((t) => (
-              <article
-                key={t.name}
-                className="group bg-white border border-slate-100 rounded-2xl p-6 hover:shadow-md hover:border-indigo-100 transition-all flex flex-col"
-              >
-                <div className="flex items-start gap-4 mb-5">
-                  {/* Avatar */}
-                  <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}
-                  >
-                    {t.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <h3 className="font-bold text-slate-900 text-sm">
-                        {t.name}
-                      </h3>
-                      <span className="text-[10px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 rounded-full">
-                        {t.badge}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 leading-snug">
-                      {t.title}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mb-3">
-                  <Stars />
-                  <span className="text-xs text-slate-400">5.0 · {t.exp}</span>
-                </div>
-
-                <p className="text-sm text-slate-500 leading-relaxed flex-1 mb-4">
-                  {t.bio}
-                </p>
-
-                <div className="flex flex-wrap gap-1.5 mb-5">
-                  {t.specialties.map((s) => (
-                    <span
-                      key={s}
-                      className="text-[11px] px-2.5 py-1 bg-slate-50 border border-slate-100 text-slate-500 rounded-full font-medium"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-
-                <Link
-                  to="/register"
-                  className="w-full text-center py-2.5 rounded-xl text-sm font-semibold border border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all"
-                >
-                  Book a session
-                </Link>
-              </article>
-            ))}
-
-            {/* CTA card */}
-            <div className="bg-indigo-600 rounded-2xl p-6 flex flex-col items-center justify-center text-center text-white">
-              <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center text-xl mb-4">
-                🔍
+          {/* Quick Search & Filter Bar */}
+          <div className="max-w-2xl mx-auto mb-10">
+            <div className="flex flex-col sm:flex-row gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 shadow-xs">
+              <div className="relative flex-1">
+                <span className="absolute inset-y-0 left-3 flex items-center text-slate-400">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search by therapist name or topic (e.g. Anxiety, Stress)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white border border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500"
+                />
               </div>
-              <h3 className="font-bold text-lg mb-2">500+ Therapists</h3>
-              <p className="text-indigo-200 text-sm leading-relaxed mb-5">
-                Find the right match for your needs from our growing network.
+              <select
+                value={selectedSpec}
+                onChange={(e) => setSelectedSpec(e.target.value)}
+                className="py-2 px-3 text-xs rounded-xl bg-white border border-slate-200 text-slate-700 focus:outline-none"
+              >
+                <option value="">All Specializations</option>
+                <option value="Anxiety">Anxiety</option>
+                <option value="Depression">Depression</option>
+                <option value="CBT">CBT</option>
+                <option value="Relationship">Relationships</option>
+                <option value="Stress">Stress Management</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Dynamic Therapist Cards */}
+          {loadingTherapists ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Spinner size="md" />
+              <p className="text-xs text-slate-500">Loading verified therapists…</p>
+            </div>
+          ) : therapistsList.length === 0 ? (
+            <div className="bg-slate-50 rounded-2xl border border-slate-100 p-12 text-center max-w-md mx-auto">
+              <div className="text-3xl mb-3">🌿</div>
+              <p className="text-sm font-semibold text-slate-700">
+                Therapists are joining Unfazed. Check back soon.
               </p>
               <Link
-                to="/register"
-                className="px-5 py-2.5 bg-white text-indigo-600 font-semibold rounded-xl text-sm hover:bg-indigo-50 transition-colors"
+                to="/join-as-therapist"
+                className="mt-4 inline-block px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition-colors"
               >
-                Explore all →
+                Join as a Therapist
               </Link>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {therapistsList.slice(0, 6).map((t) => (
+                <TherapistCard
+                  key={t._id}
+                  therapist={t}
+                  onBook={(therapist) => setSelectedTherapistForBooking(therapist)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* View All Therapists CTA */}
+          <div className="mt-12 text-center">
+            <Link
+              to="/therapists"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-2xl shadow-sm transition-all"
+            >
+              <span>View All Therapists</span>
+              <span>→</span>
+            </Link>
           </div>
 
           {/* How it works */}
@@ -783,6 +752,15 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Booking Modal */}
+      {selectedTherapistForBooking && (
+        <BookingModal
+          isOpen={!!selectedTherapistForBooking}
+          onClose={() => setSelectedTherapistForBooking(null)}
+          therapist={selectedTherapistForBooking}
+        />
+      )}
     </div>
   );
 };

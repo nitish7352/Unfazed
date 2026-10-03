@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../components/common/Toast";
@@ -8,6 +8,11 @@ import Input from "../../components/common/Input";
 
 const RegisterPage = () => {
   const { register: registerUser } = useAuth();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const queryRole = searchParams.get("role") || location.state?.role;
+  const [role, setRole] = useState(queryRole === "client" ? "client" : (queryRole === "therapist" ? "therapist" : "client"));
+
   const {
     register,
     handleSubmit,
@@ -26,8 +31,11 @@ const RegisterPage = () => {
         lastName: data.lastName,
         email: data.email,
         password: data.password,
+        role,
       });
-      navigate("/dashboard");
+      const redirectUrl =
+        location.state?.redirect || searchParams.get("redirect") || "/dashboard";
+      navigate(redirectUrl);
       toast.success("Account created! Welcome to Unfazed 🎉");
     } catch (err) {
       toast.error(
@@ -94,9 +102,37 @@ const RegisterPage = () => {
           <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
             Create your account
           </h2>
-          <p className="text-sm text-[var(--text-secondary)] mb-7">
-            Start your free trial — no credit card required
+          <p className="text-sm text-[var(--text-secondary)] mb-5">
+            {role === "client"
+              ? "Book confidential sessions with licensed therapists"
+              : "Start your practice — no credit card required"}
           </p>
+
+          {/* Account type selector */}
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-5 border border-slate-200 dark:border-slate-700">
+            <button
+              type="button"
+              onClick={() => setRole("client")}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                role === "client"
+                  ? "bg-white dark:bg-slate-900 text-[var(--primary)] shadow-sm"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              }`}
+            >
+              👤 Client (Seeker)
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("therapist")}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                role === "therapist"
+                  ? "bg-white dark:bg-slate-900 text-[var(--primary)] shadow-sm"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              }`}
+            >
+              🩺 Therapist (Provider)
+            </button>
+          </div>
 
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -179,7 +215,8 @@ const RegisterPage = () => {
           <p className="text-center text-sm text-[var(--text-secondary)] mt-6">
             Already have an account?{" "}
             <Link
-              to="/login"
+              to={{ pathname: "/login", search: location.search }}
+              state={location.state}
               className="text-[var(--primary)] font-medium hover:underline"
             >
               Sign in
