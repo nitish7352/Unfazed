@@ -1,94 +1,120 @@
 @import "tailwindcss";
 
-/* ── Google Fonts ──────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
 /* ── Design tokens ─────────────────────────────────────────────────────── */
 :root {
   /* Brand */
-  --primary:       #4F46E5;
-  --primary-dark:  #3730A3;
+  --primary: #4F46E5;
+  --primary-dark: #3730A3;
   --primary-light: #EEF2FF;
-  --accent:        #0F766E;
-  --accent-light:  #F0FDFA;
+  --accent: #0F766E;
+  --accent-light: #F0FDFA;
 
   /* Backgrounds */
-  --bg:            #F8FAFC;
-  --surface:       #FFFFFF;
-  --surface-2:     #F1F5F9;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-2: #F1F5F9;
 
   /* Text */
-  --text-primary:  #0F172A;
-  --text-secondary:#64748B;
-  --text-muted:    #94A3B8;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
 
   /* Borders */
-  --border:        #E2E8F0;
-  --border-focus:  #4F46E5;
+  --border: #E2E8F0;
+  --border-focus: #4F46E5;
 
   /* Status */
-  --success:       #059669;
+  --success: #059669;
   --success-light: #D1FAE5;
-  --warning:       #D97706;
+  --warning: #D97706;
   --warning-light: #FEF3C7;
-  --error:         #DC2626;
-  --error-light:   #FEE2E2;
+  --error: #DC2626;
+  --error-light: #FEE2E2;
 
   /* Radius */
-  --radius-sm:     0.5rem;
-  --radius:        0.75rem;
-  --radius-lg:     1rem;
-  --radius-xl:     1.25rem;
+  --radius-sm: 0.5rem;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
 
   /* Shadows */
-  --shadow-sm:     0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow:        0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md:     0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg:     0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 
   /* Sidebar */
-  --sidebar-width:      16rem;
-  --sidebar-collapsed:  4.5rem;
-  --topbar-height:      4rem;
+  --sidebar-width: 16rem;
+  --sidebar-collapsed: 4.5rem;
+  --topbar-height: 4rem;
 }
 
 /* ── Tailwind theme tokens ─────────────────────────────────────────────── */
 @theme {
-  --color-primary:        #4F46E5;
-  --color-primary-dark:   #3730A3;
-  --color-primary-light:  #EEF2FF;
-  --color-accent:         #0F766E;
-  --color-accent-light:   #F0FDFA;
-  --color-surface:        #FFFFFF;
-  --color-bg:             #F8FAFC;
-  --color-text-primary:   #0F172A;
+  --color-primary: #4F46E5;
+  --color-primary-dark: #3730A3;
+  --color-primary-light: #EEF2FF;
+  --color-accent: #0F766E;
+  --color-accent-light: #F0FDFA;
+  --color-surface: #FFFFFF;
+  --color-bg: #F8FAFC;
+  --color-text-primary: #0F172A;
   --color-text-secondary: #64748B;
-  --color-text-muted:     #94A3B8;
-  --color-border:         #E2E8F0;
-  --color-success:        #059669;
-  --color-warning:        #D97706;
-  --color-error:          #DC2626;
+  --color-text-muted: #94A3B8;
+  --color-border: #E2E8F0;
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
 }
 
 /* ── Keyframes ─────────────────────────────────────────────────────────── */
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
+
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.97); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ── Utility classes ───────────────────────────────────────────────────── */
 @layer utilities {
-  .animate-slide-up  { animation: slide-up  0.2s ease-out; }
-  .animate-fade-in   { animation: fade-in   0.15s ease-out; }
-  .animate-scale-in  { animation: scale-in  0.15s ease-out; }
+  .animate-slide-up {
+    animation: slide-up 0.2s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.15s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.15s ease-out;
+  }
 }
 
 /* ── Global base ───────────────────────────────────────────────────────── */
@@ -122,43 +148,95 @@ body {
 }
 
 /* ── Scrollbar styling ─────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 
 /* ── TipTap editor styles ──────────────────────────────────────────────── */
 .tiptap {
   outline: none;
   min-height: 240px;
 }
-.tiptap p { margin: 0 0 0.5rem; }
-.tiptap h1, .tiptap h2, .tiptap h3 { font-weight: 600; margin: 1rem 0 0.5rem; color: var(--text-primary); }
-.tiptap ul, .tiptap ol { padding-left: 1.5rem; margin: 0.5rem 0; }
-.tiptap blockquote { border-left: 3px solid var(--primary); padding-left: 1rem; color: var(--text-secondary); }
-.tiptap strong { font-weight: 600; color: var(--text-primary); }
+
+.tiptap p {
+  margin: 0 0 0.5rem;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3 {
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid var(--primary);
+  padding-left: 1rem;
+  color: var(--text-secondary);
+}
+
+.tiptap strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
 
 /* ── React Big Calendar overrides ──────────────────────────────────────── */
-.rbc-calendar { font-family: inherit; }
+.rbc-calendar {
+  font-family: inherit;
+}
+
 .rbc-event {
   background-color: var(--primary) !important;
   border-radius: 4px !important;
   border: none !important;
   font-size: 12px !important;
 }
-.rbc-today { background-color: var(--primary-light) !important; }
+
+.rbc-today {
+  background-color: var(--primary-light) !important;
+}
+
 .rbc-toolbar button:hover {
   background-color: var(--primary-light) !important;
   color: var(--primary) !important;
 }
+
 .rbc-toolbar button.rbc-active {
   background-color: var(--primary) !important;
   color: white !important;
 }
+
 .rbc-header {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
 }
-.rbc-off-range-bg { background: #f8fafc; }
-.rbc-selected { background-color: var(--primary-dark) !important; }
+
+.rbc-off-range-bg {
+  background: #f8fafc;
+}
+
+.rbc-selected {
+  background-color: var(--primary-dark) !important;
+}

@@ -159,12 +159,30 @@ const SessionsPage = () => {
                       ₹{s.rate?.toLocaleString("en-IN")}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Link to={`/sessions/${s._id}`}>
                           <Button size="sm" variant="ghost">
                             View
                           </Button>
                         </Link>
+                        {/* Live Session button — always visible for active sessions */}
+                        {["scheduled", "confirmed", "in_progress"].includes(
+                          s.status,
+                        ) &&
+                          s.roomId && (
+                            <Link to={`/session/room/${s.roomId}`}>
+                              <Button
+                                size="sm"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+                              >
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                                </span>
+                                Join Live
+                              </Button>
+                            </Link>
+                          )}
                         {["scheduled", "confirmed"].includes(s.status) && (
                           <Button
                             size="sm"
